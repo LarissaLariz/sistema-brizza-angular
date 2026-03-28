@@ -1,0 +1,10 @@
+<h1>Lofts Guarujá</h1>
+
+<div class="container">
+  <app-hospedagem-card
+    *ngFor="let item of hospedagens"
+    [titulo]="item.titulo"
+    [descricao]="item.descricao"
+    [imagem]="item.imagem"
+  ></app-hospedagem-card>
+</div>
