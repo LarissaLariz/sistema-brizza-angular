@@ -1,38 +1,172 @@
-.container {
+.login-container {
   height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 100%;
+
   background-image: url('/images/background.png');
   background-size: cover;
+  background-position: center;
 }
 
-.card {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  width: 300px;
+.login-overlay {
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  padding-right: 80px;
+}
+
+.login-card {
+  width: 420px;
+  padding: 40px 32px;
+
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.992);
+
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: center;
 }
 
-input {
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+/* LOGO */
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
 }
 
-button {
-  background-color: teal;
-  color: white;
-  padding: 10px;
+.logo-container img {
+  width: 180px;
+}
+
+/* TÍTULO */
+.login-card h1 {
+  font-size: 28px;
+  font-weight: 700;
+
+  text-align: center;
+
+  margin-bottom: 12px;
+}
+
+/* DESCRIÇÃO */
+.login-card p {
+  font-size: 14px;
+  color: #555;
+
+  text-align: center;
+
+  margin-bottom: 24px;
+}
+
+/* FORM */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* INPUTS */
+.form-group input {
+  height: 48px;
+  padding: 0 16px;
+
+  border-radius: 10px;
+  border: 1px solid #ddd;
+
+  font-size: 14px;
+
+  outline: none;
+}
+
+.form-group input:focus {
+  border: 1px solid #00a8a8;
+}
+
+/* BOTÃO ENTRAR */
+.form-group button {
+  height: 48px;
+
   border: none;
-  border-radius: 5px;
+  border-radius: 10px;
+
+  background: #00a8a8;
+  color: white;
+
+  font-size: 16px;
+  font-weight: bold;
+
   cursor: pointer;
 }
 
-link {
-  font-size: 12px;
-  text-align: center;
+.form-group button:hover {
+  background: #008c8c;
+}
+
+/* ESQUECI SENHA */
+.forgot-password {
+  text-align: right;
+
+  font-size: 13px;
+  color: #00a8a8;
+
+  cursor: pointer;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+/* DIVIDER */
+.divider {
+  display: flex;
+  justify-content: center;
+
+  margin: 16px 0;
+}
+
+.divider span {
+  font-size: 13px;
+  color: #777;
+}
+
+.social-login {
+  display: flex;
+  justify-content: center;
+}
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+
+  border-radius: 10px;
+  border: 1px solid #ddd;
+
+  background: white;
+color: #444;
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+.social-btn img {
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.social-btn.google {
+  background: white !important;
+  color: #444 !important;
+  border: 1px solid #ddd !important;
 }

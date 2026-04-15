@@ -1,13 +1,43 @@
-<div class="container">
-  <div class="card">
-    <h1>Bem-vindo ao Brizza</h1>
-    <p>Faça login para acessar as melhores hospedagens no Guarujá!</p>
+<div class="login-container">
+  <div class="login-overlay">
+    <div class="login-card">
 
-    <input type="text" placeholder="E-mail ou Usuário" />
-    <input type="password" placeholder="Senha" />
+      <div class="logo-container">
+        <img src="/images/logo.png" alt="Logo Brizza">
+      </div>
 
-    <button (click)="entrar()">Entrar</button>
+      <h1>Bem-vindo ao Brizza</h1>
 
-    <p>Não tem uma conta? <a href="#">Cadastre-se</a></p>
+      <p>Faça login para encontrar sua hospedagem perfeita.</p>
+
+      <div class="form-group">
+<input type="text" placeholder="E-mail ou Usuário" [(ngModel)]="email" (input)="erroLogin = ''">     
+   <input type="password" placeholder="Senha" [(ngModel)]="senha">
+
+        @if (erroLogin) {
+          <div class="error">
+            {{ erroLogin }}
+          </div>
+        }
+
+        <button (click)="fazerLogin()">Entrar</button>
+
+        <div class="forgot-password">
+          Esqueci minha senha
+        </div>
+
+        <div class="divider">
+          <span>Ou entre com</span>
+        </div>
+
+        <div class="social-login">
+          <button class="social-btn google" type="button">
+            <img src="/images/Logo-google.PNG" alt="Google">
+            Google
+          </button>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
