@@ -1,0 +1,72 @@
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+  padding: 20px;
+}
+
+.container img {
+    width: 70%;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+.container h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.detalhes-page {
+  padding: 20px;
+  background-color: #f7f7f7;
+  min-height: 100vh;
+}
+
+.detalhes-card {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.detalhes-card {
+  display: block;
+  min-height: 300px;
+}
+
+.detalhes-imagem {
+  width: 60%;
+  height: 350px;
+}
+
+.detalhes-imagem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.detalhes-conteudo p {
+  width: 50%;
+  padding: 24px;
+}
+
+.botao-voltar {
+  background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.botao-voltar:hover {
+    text-decoration: underline;
+}
+
+.body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7f7f7;
+}

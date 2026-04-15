@@ -1,1 +1,18 @@
-<p>detalhes-hospedagem works!</p>
+@if (hospedagemSelecionada) {
+  <div class="detalhes-page">
+    <div class="detalhes-topo">
+      <button class="botao-voltar" (click)="Voltar()">Voltar</button>
+    </div>
+
+    <div class="detalhes-card">
+      <div class="detalhes-imagem">
+        <img [src]="hospedagemSelecionada.imagem" [alt]="hospedagemSelecionada.titulo" />
+      </div>
+
+      <div class="detalhes-conteudo">
+        <h1>{{ hospedagemSelecionada.titulo }}</h1>
+        <p>{{ hospedagemSelecionada.descricao }}</p>
+      </div>
+    </div>
+  </div>
+}
