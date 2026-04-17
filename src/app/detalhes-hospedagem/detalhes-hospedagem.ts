@@ -1,21 +1,17 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
 import { HOSPEDAGENS } from '../dados/hospedagens';
 
 @Component({
   selector: 'app-detalhes-hospedagem',
   standalone: true,
-  imports: [NgIf],
-  templateUrl: './detalhes-hospedagem.html',
-  styleUrl: './detalhes-hospedagem.css',
-})
-export class DetalhesHospedagem implements OnInit {
-  private route = inject(ActivatedRoute);
+  private Router = inject(ActivatedRoute),
+  private Router = inject(Router),
   
   hospedagemSelecionada: any = null;
   Voltar() {
-    this.route.navigate(['/home']);}
+    this.router.navigate(['/home']);}
   id: number | null = null;
 
   ngOnInit() {
