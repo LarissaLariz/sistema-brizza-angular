@@ -168,25 +168,40 @@
       </div>
     </div>
 
-    <!-- MODAL IMAGEM -->
-    <div
-      class="modal-imagem-fundo"
-      *ngIf="mostrarModalImagem"
-      (click)="fecharImagem()"
-    >
-      <button
-        class="modal-imagem-fechar"
-        type="button"
-        (click)="fecharImagem()"
-      >
-        ×
-      </button>
+<div
+  class="modal-imagem-fundo"
+  *ngIf="mostrarModalImagem"
+  (click)="fecharImagem()"
+>
+  <button
+    class="modal-imagem-fechar"
+    type="button"
+    (click)="fecharImagem()"
+  >
+    ×
+  </button>
 
-      <img
-        class="modal-imagem"
-        [src]="imagemSelecionada"
-        (click)="$event.stopPropagation()"
-      />
-    </div>
+  <button
+    class="seta-imagem esquerda"
+    type="button"
+    (click)="imagemAnterior(); $event.stopPropagation()"
+  >
+    ‹
+  </button>
+
+  <img
+    class="modal-imagem"
+    [src]="imagemSelecionada"
+    (click)="$event.stopPropagation()"
+  />
+
+  <button
+    class="seta-imagem direita"
+    type="button"
+    (click)="proximaImagem(); $event.stopPropagation()"
+  >
+    ›
+  </button>
+</div>
   </div>
 }

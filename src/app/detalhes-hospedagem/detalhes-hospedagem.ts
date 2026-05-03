@@ -20,6 +20,7 @@ export class DetalhesHospedagem {
   mostrarModalReserva = false;
   mostrarModalImagem = false;
   imagemSelecionada = '';
+  indiceImagemAtual = 0;
 
   hospedagens = [
     {
@@ -149,9 +150,22 @@ export class DetalhesHospedagem {
   fecharModalReserva() {
     this.mostrarModalReserva = false;
   }
-  abrirImagem(imagem: string) {
+abrirImagem(imagem: string) {
+  this.indiceImagemAtual = this.hospedagemSelecionada.imagens.indexOf(imagem);
   this.imagemSelecionada = imagem;
   this.mostrarModalImagem = true;
+}
+proximaImagem() {
+  const total = this.hospedagemSelecionada.imagens.length;
+  this.indiceImagemAtual = (this.indiceImagemAtual + 1) % total;
+  this.imagemSelecionada = this.hospedagemSelecionada.imagens[this.indiceImagemAtual];
+}
+
+imagemAnterior() {
+  const total = this.hospedagemSelecionada.imagens.length;
+  this.indiceImagemAtual =
+    (this.indiceImagemAtual - 1 + total) % total;
+  this.imagemSelecionada = this.hospedagemSelecionada.imagens[this.indiceImagemAtual];
 }
 
 fecharImagem() {

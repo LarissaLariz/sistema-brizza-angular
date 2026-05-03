@@ -10,15 +10,22 @@
 }
 
 .botao-voltar {
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
   border: none;
-  font-size: 15px;
-  color: #374151;
+  background: #668cdd;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .botao-voltar:hover {
-  text-decoration: underline;
+  background: #3858b3;
 }
 
 .detalhes-card {
@@ -416,4 +423,73 @@
 
 .modal-btn-secundario:hover {
   background: #dbeafe;
+}
+.imagem-principal,
+.imagens-secundarias img {
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.imagem-principal:hover,
+.imagens-secundarias img:hover {
+  filter: brightness(0.88);
+}
+
+.modal-imagem-fundo {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 32px;
+}
+
+.modal-imagem {
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 18px;
+  object-fit: contain;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.modal-imagem-fechar {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #111827;
+  font-size: 28px;
+  cursor: pointer;
+}
+.seta-imagem {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: #111;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 2001;
+}
+
+.seta-imagem:hover {
+  background: white;
+}
+
+.seta-imagem.esquerda {
+  left: 40px;
+}
+
+.seta-imagem.direita {
+  right: 40px;
 }
