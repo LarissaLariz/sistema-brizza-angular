@@ -1,27 +1,26 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-hospedagem-card',
   standalone: true,
+  imports: [],
   templateUrl: './hospedagem-card.html',
   styleUrl: './hospedagem-card.css',
 })
 export class HospedagemCard {
-  @Input() titulo!: string;
-  @Input() descricao!: string;
-  @Input() imagem!: string;
+  @Input() titulo = '';
+  @Input() descricao = '';
+  @Input() imagem = '';
   @Input() hospedagem: any;
 
+  constructor(private router: Router) {}
+
   reservar() {
-    alert('Você reservou: ' + this.titulo);
+    alert('Reserva iniciada!');
   }
-private router = inject(Router);
 
   verDetalhes() {
     this.router.navigate(['/detalhes', this.hospedagem.id]);
-    console.log('clicou na hospedagem: ', this.hospedagem);
   }
-
-
-  }
+}

@@ -1,11 +1,12 @@
-<div>
+<div class="card-hospedagem">
   <img [src]="imagem" />
 
   <h3>{{ titulo }}</h3>
-  <p>{{ descricao }}</p>
-  <p>R$ {{ hospedagem.preco }} / noite</p>
+  <p class="localizacao">{{ descricao }}</p>
+  <p class="preco">R$ {{ hospedagem.preco }} <span>/ noite</span></p>
 
-  <button (click)="reservar()">Reservar</button>
-
-  <button (click)="verDetalhes ()">Ver Detalhes</button>
+  <div class="acoes">
+    <button (click)="reservar()">Reservar</button>
+    <button (click)="verDetalhes()">Ver Detalhes</button>
+  </div>
 </div>
