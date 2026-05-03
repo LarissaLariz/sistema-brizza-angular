@@ -1,18 +1,192 @@
 @if (hospedagemSelecionada) {
   <div class="detalhes-page">
     <div class="detalhes-topo">
-      <button class="botao-voltar" (click)="Voltar()">Voltar</button>
+      <button class="botao-voltar" type="button" (click)="voltar()">
+        ← Voltar
+      </button>
     </div>
 
     <div class="detalhes-card">
-      <div class="detalhes-imagem">
-        <img [src]="hospedagemSelecionada.imagem" [alt]="hospedagemSelecionada.titulo" />
+      <div class="galeria">
+        <div
+          class="imagem-principal"
+          (click)="abrirImagem(hospedagemSelecionada.imagens[0])"
+        >
+          <img [src]="hospedagemSelecionada.imagens[0]" />
+        </div>
+
+        <div class="imagens-secundarias">
+          <img
+            [src]="hospedagemSelecionada.imagens[1]"
+            (click)="abrirImagem(hospedagemSelecionada.imagens[1])"
+          />
+          <img
+            [src]="hospedagemSelecionada.imagens[2]"
+            (click)="abrirImagem(hospedagemSelecionada.imagens[2])"
+          />
+          <img
+            [src]="hospedagemSelecionada.imagens[3]"
+            (click)="abrirImagem(hospedagemSelecionada.imagens[3])"
+          />
+          <img
+            [src]="hospedagemSelecionada.imagens[4]"
+            (click)="abrirImagem(hospedagemSelecionada.imagens[4])"
+          />
+        </div>
       </div>
 
       <div class="detalhes-conteudo">
-        <h1>{{ hospedagemSelecionada.titulo }}</h1>
-        <p>{{ hospedagemSelecionada.descricao }}</p>
+        <div class="detalhes-info-area">
+          <h1>{{ hospedagemSelecionada.titulo }}</h1>
+
+          <p class="detalhes-local">
+            {{ hospedagemSelecionada.local }} - Guarujá
+          </p>
+
+          <p class="detalhes-info">
+            {{ hospedagemSelecionada.hospedes }} hóspedes ·
+            {{ hospedagemSelecionada.quartos }} quarto(s)
+          </p>
+
+          <p class="detalhes-descricao">
+            {{ hospedagemSelecionada.descricao }}
+          </p>
+
+          <div class="comodidades">
+            <h2>O que este lugar oferece</h2>
+
+            <div class="comodidades-lista">
+              <div
+                class="comodidade-item"
+                *ngFor="let comodidade of hospedagemSelecionada.comodidades"
+              >
+                <span>{{ comodidade.icone }}</span>
+                <p>{{ comodidade.nome }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reserva-box">
+          <div class="reserva-preco">
+            <strong>R$ {{ hospedagemSelecionada.preco }}</strong>
+            <span>/ noite</span>
+          </div>
+
+          <div class="reserva-dados">
+            <div class="reserva-campo">
+              <label>Entrada</label>
+              <input type="date" [(ngModel)]="dataEntrada" />
+            </div>
+
+            <div class="reserva-campo">
+              <label>Saída</label>
+              <input type="date" [(ngModel)]="dataSaida" />
+            </div>
+
+            <div class="reserva-contador">
+              <div class="contador-texto">
+                <strong>Adultos</strong>
+                <span>13 anos ou mais</span>
+              </div>
+
+              <div class="contador-acoes">
+                <button type="button" (click)="alterarQuantidade('adultos', -1)">-</button>
+                <span>{{ adultos }}</span>
+                <button type="button" (click)="alterarQuantidade('adultos', 1)">+</button>
+              </div>
+            </div>
+
+            <div class="reserva-contador">
+              <div class="contador-texto">
+                <strong>Crianças</strong>
+                <span>De 2 a 12 anos</span>
+              </div>
+
+              <div class="contador-acoes">
+                <button type="button" (click)="alterarQuantidade('criancas', -1)">-</button>
+                <span>{{ criancas }}</span>
+                <button type="button" (click)="alterarQuantidade('criancas', 1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="reserva-total" *ngIf="quantidadeNoites > 0">
+            <span>
+              R$ {{ hospedagemSelecionada.preco }} x {{ quantidadeNoites }} noite(s)
+            </span>
+            <strong>R$ {{ valorTotalReserva }}</strong>
+          </div>
+
+          <button class="reserva-btn" type="button" (click)="abrirModalReserva()">
+            Reservar
+          </button>
+
+          <button class="whatsapp-btn" type="button" (click)="entrarWhatsapp()">
+            Falar no WhatsApp
+          </button>
+        </div>
       </div>
+    </div>
+
+    <!-- MODAL RESERVA -->
+    <div class="modal-fundo" *ngIf="mostrarModalReserva">
+      <div class="modal-reserva">
+        <button
+          class="modal-fechar"
+          type="button"
+          (click)="fecharModalReserva()"
+        >
+          ×
+        </button>
+
+        <div class="modal-header">
+          <h2>Faça seu cadastro para reservar</h2>
+          <p>
+            Para continuar, entre na sua conta ou crie um cadastro rápido.
+          </p>
+        </div>
+
+        <div class="modal-resumo">
+          <strong>{{ hospedagemSelecionada.titulo }}</strong>
+          <span>{{ textoPeriodoReserva }}</span>
+          <span>{{ textoHospedesReserva }}</span>
+          <span *ngIf="quantidadeNoites > 0">
+            Total: R$ {{ valorTotalReserva }}
+          </span>
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-btn-principal" type="button">
+            Criar cadastro
+          </button>
+
+          <button class="modal-btn-secundario" type="button">
+            Já tenho conta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL IMAGEM -->
+    <div
+      class="modal-imagem-fundo"
+      *ngIf="mostrarModalImagem"
+      (click)="fecharImagem()"
+    >
+      <button
+        class="modal-imagem-fechar"
+        type="button"
+        (click)="fecharImagem()"
+      >
+        ×
+      </button>
+
+      <img
+        class="modal-imagem"
+        [src]="imagemSelecionada"
+        (click)="$event.stopPropagation()"
+      />
     </div>
   </div>
 }
