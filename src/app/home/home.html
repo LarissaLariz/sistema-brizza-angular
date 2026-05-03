@@ -1,10 +1,155 @@
 <h1>Lofts Guarujá</h1>
 
+<div class="search-shell">
+  <div class="search-pill">
+
+    <!-- ONDE -->
+    <div class="search-segment location-segment">
+      <span class="segment-title">Onde</span>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar destinos"
+        [(ngModel)]="localSelecionado"
+        (focus)="mostrarSugestoesLocal = true"
+        (click)="mostrarSugestoesLocal = true"
+      />
+    </div>
+
+    <div
+      class="location-dropdown"
+      *ngIf="mostrarSugestoesLocal && lugaresFiltrados.length > 0"
+    >
+      <button
+        class="location-option"
+        *ngFor="let lugar of lugaresFiltrados"
+        (click)="selecionarLocal(lugar)"
+      >
+        {{ lugar }}
+      </button>
+    </div>
+
+    <div class="search-divider"></div>
+
+    <!-- QUANDO -->
+    <div class="search-segment dates-segment" (click)="mostrarCalendario = !mostrarCalendario">
+      <span class="segment-title">Quando</span>
+      <span class="segment-text">Insira as datas</span>
+    </div>
+
+    <div class="search-divider"></div>
+
+    <!-- QUEM -->
+    <div class="search-segment guests-segment" (click)="mostrarHospedes = !mostrarHospedes">
+      <span class="segment-title">Quem</span>
+      <span class="segment-text">Hóspedes?</span>
+    </div>
+
+    <button class="search-icon-btn">Buscar</button>
+
+    <!-- CALENDÁRIO -->
+    <div class="calendar-dropdown" *ngIf="mostrarCalendario">
+      <div class="calendar-tabs">
+        <button class="calendar-tab active">Datas</button>
+      </div>
+
+      <div class="calendar-months">
+
+        <!-- ABRIL -->
+        <div class="calendar-month">
+          <h3>abril de 2026</h3>
+
+          <div class="calendar-weekdays">
+            <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+          </div>
+
+          <div class="calendar-days">
+            <span class="empty-day"></span>
+            <span class="empty-day"></span>
+            <span class="empty-day"></span>
+
+            <button
+              class="calendar-day"
+              *ngFor="let dia of diasAbril"
+              (click)="selecionarData('2026-04-' + dia)"
+              [class.selected-day]="
+                '2026-04-' + dia === dataEntrada ||
+                '2026-04-' + dia === dataSaida
+              "
+            >
+              {{ dia }}
+            </button>
+          </div>
+        </div>
+
+        <!-- MAIO -->
+        <div class="calendar-month">
+          <h3>maio de 2026</h3>
+
+          <div class="calendar-weekdays">
+            <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+          </div>
+
+          <div class="calendar-days">
+            <span class="empty-day"></span>
+            <span class="empty-day"></span>
+            <span class="empty-day"></span>
+            <span class="empty-day"></span>
+            <span class="empty-day"></span>
+
+            <button
+              class="calendar-day"
+              *ngFor="let dia of diasMaio"
+              (click)="selecionarData('2026-05-' + dia)"
+              [class.selected-day]="
+                '2026-05-' + dia === dataEntrada ||
+                '2026-05-' + dia === dataSaida
+              "
+            >
+              {{ dia }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- HÓSPEDES -->
+    <div class="guests-dropdown" *ngIf="mostrarHospedes">
+      <div class="guest-row">
+        <div>
+          <div class="guest-title">Adultos</div>
+          <div class="guest-subtitle">13 anos ou mais</div>
+        </div>
+        <div class="guest-counter">
+          <button class="counter-btn" (click)="alterarQuantidade('adultos', -1)">-</button>
+          <span>{{ adultos }}</span>
+          <button class="counter-btn" (click)="alterarQuantidade('adultos', 1)">+</button>
+        </div>
+      </div>
+
+      <div class="guest-row">
+        <div>
+          <div class="guest-title">Crianças</div>
+          <div class="guest-subtitle">De 2 a 12 anos</div>
+        </div>
+        <div class="guest-counter">
+          <button class="counter-btn" (click)="alterarQuantidade('criancas', -1)">-</button>
+          <span>{{ criancas }}</span>
+          <button class="counter-btn" (click)="alterarQuantidade('criancas', 1)">+</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <div class="container">
   <app-hospedagem-card
     *ngFor="let item of hospedagens"
     [titulo]="item.titulo"
     [descricao]="item.descricao"
     [imagem]="item.imagem"
+    [hospedagem]="item"
   ></app-hospedagem-card>
 </div>
