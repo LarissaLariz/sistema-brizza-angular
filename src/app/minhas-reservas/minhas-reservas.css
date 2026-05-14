@@ -1,0 +1,37 @@
+.reservas-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.reserva-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background: white;
+}
+
+.reserva-card h2 {
+  margin-bottom: 10px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #22c55e;
+  color: white;
+  cursor: pointer;
+}
+
+.pendente {
+  color: orange;
+  font-weight: bold;
+}
+
+.pago {
+  color: green;
+  font-weight: bold;
+}

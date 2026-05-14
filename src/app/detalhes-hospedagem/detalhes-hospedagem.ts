@@ -11,24 +11,29 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrl: './detalhes-hospedagem.css',
 })
 export class DetalhesHospedagem {
+
   hospedagemSelecionada: any = null;
 
   dataEntrada: string | null = null;
   dataSaida: string | null = null;
+
   adultos = 0;
   criancas = 0;
+
   mostrarModalReserva = false;
   mostrarModalImagem = false;
+
   imagemSelecionada = '';
   indiceImagemAtual = 0;
+
+  mensagemReserva = '';
 
   hospedagens = [
     {
       id: 1,
       titulo: 'Golden Beach 158',
       local: 'Pitangueiras',
-      descricao: 'Hospedagem confortável no Guarujá, com piscina, boa localização e vista agradável.',
-      imagem: '/images/imagem1.jpeg',
+      descricao: 'Hospedagem confortável no Guarujá...',
       imagens: [
         '/images/imagem1.jpeg',
         '/images/imagem2.jpeg',
@@ -52,12 +57,10 @@ export class DetalhesHospedagem {
     private route: ActivatedRoute,
     private router: Router
   ) {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    const id = Number(idParam);
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.hospedagemSelecionada = this.hospedagens.find(h => h.id === id);
 
-    this.hospedagemSelecionada = this.hospedagens.find((item) => item.id === id);
-
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.subscribe(params => {
       this.dataEntrada = params['dataEntrada'] || null;
       this.dataSaida = params['dataSaida'] || null;
       this.adultos = Number(params['adultos'] || 0);
@@ -65,10 +68,20 @@ export class DetalhesHospedagem {
     });
   }
 
-  formatarData(data: string | null) {
-    if (!data) {
-      return 'Não informada';
-    }
+  voltar() {
+    this.router.navigate(['/home']);
+  }
+
+  irParaCadastro() {
+    this.router.navigate(['/cadastro'], {
+      queryParams: {
+        id: this.hospedagemSelecionada.id
+      }
+    });
+  }
+
+  formatarData(data: string) {
+    if (!data) return '';
 
     const [ano, mes, dia] = data.split('-');
 
@@ -80,118 +93,132 @@ export class DetalhesHospedagem {
     return `${Number(dia)} de ${meses[Number(mes) - 1]}`;
   }
 
-  get textoPeriodoReserva() {
-    if (!this.dataEntrada && !this.dataSaida) {
-      return 'Datas não informadas';
+  alterarQuantidade(tipo: 'adultos' | 'criancas', valor: number) {
+    const total = this.adultos + this.criancas;
+    const limite = this.hospedagemSelecionada.hospedes;
+
+    if (tipo === 'adultos') {
+      const novo = this.adultos + valor;
+      if (novo < 0) return;
+      if (valor > 0 && total >= limite) return;
+      this.adultos = novo;
     }
 
-    if (this.dataEntrada && this.dataSaida) {
-      return `${this.formatarData(this.dataEntrada)} - ${this.formatarData(this.dataSaida)}`;
+    if (tipo === 'criancas') {
+      const novo = this.criancas + valor;
+      if (novo < 0) return;
+      if (valor > 0 && total >= limite) return;
+      this.criancas = novo;
     }
-
-    return this.formatarData(this.dataEntrada || this.dataSaida);
   }
 
-  get textoHospedesReserva() {
-    const total = this.adultos + this.criancas;
+  abrirImagem(img: string) {
+    this.imagemSelecionada = img;
+    this.indiceImagemAtual = this.hospedagemSelecionada.imagens.indexOf(img);
+    this.mostrarModalImagem = true;
+  }
 
-    if (total === 0) {
-      return 'Hóspedes não informados';
-    }
+  fecharImagem() {
+    this.mostrarModalImagem = false;
+  }
 
-    return `${total} hóspede(s)`;
+  proximaImagem() {
+    const total = this.hospedagemSelecionada.imagens.length;
+    this.indiceImagemAtual = (this.indiceImagemAtual + 1) % total;
+    this.imagemSelecionada = this.hospedagemSelecionada.imagens[this.indiceImagemAtual];
+  }
+
+  imagemAnterior() {
+    const total = this.hospedagemSelecionada.imagens.length;
+    this.indiceImagemAtual =
+      (this.indiceImagemAtual - 1 + total) % total;
+    this.imagemSelecionada = this.hospedagemSelecionada.imagens[this.indiceImagemAtual];
+  }
+
+  abrirModalReserva() {
+    this.confirmarReserva();
+  }
+
+  fecharModalReserva() {
+    this.mostrarModalReserva = false;
   }
 
   get quantidadeNoites() {
-    if (!this.dataEntrada || !this.dataSaida) {
-      return 0;
-    }
+    if (!this.dataEntrada || !this.dataSaida) return 0;
 
     const entrada = new Date(this.dataEntrada);
     const saida = new Date(this.dataSaida);
 
-    const diferenca = saida.getTime() - entrada.getTime();
-    const noites = diferenca / (1000 * 60 * 60 * 24);
-
-    return noites > 0 ? noites : 0;
+    return (saida.getTime() - entrada.getTime()) / (1000 * 60 * 60 * 24);
   }
 
   get valorTotalReserva() {
     return this.quantidadeNoites * this.hospedagemSelecionada.preco;
   }
 
-  alterarQuantidade(tipo: 'adultos' | 'criancas', valor: number) {
+  get textoPeriodoReserva() {
+    if (!this.dataEntrada || !this.dataSaida) return 'Datas não informadas';
+
+    return `${this.formatarData(this.dataEntrada)} - ${this.formatarData(this.dataSaida)}`;
+  }
+
+  get textoHospedesReserva() {
     const total = this.adultos + this.criancas;
-    const limite = this.hospedagemSelecionada.hospedes;
+    return total ? `${total} hóspedes` : 'Não informado';
+  }
 
-    if (tipo === 'adultos') {
-      const novoValor = this.adultos + valor;
+  confirmarReserva() {
+    this.mensagemReserva = '';
 
-      if (novoValor < 0) return;
-      if (valor > 0 && total >= limite) return;
-
-      this.adultos = novoValor;
+    if (!this.dataEntrada || !this.dataSaida) {
+      this.mensagemReserva = 'Selecione as datas';
+      return;
     }
 
-    if (tipo === 'criancas') {
-      const novoValor = this.criancas + valor;
-
-      if (novoValor < 0) return;
-      if (valor > 0 && total >= limite) return;
-
-      this.criancas = novoValor;
+    if (this.adultos + this.criancas === 0) {
+      this.mensagemReserva = 'Informe ao menos 1 hóspede';
+      return;
     }
+
+    const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
+
+    const novaReserva = {
+      titulo: this.hospedagemSelecionada.titulo,
+      dataEntrada: this.dataEntrada,
+      dataSaida: this.dataSaida,
+      adultos: this.adultos,
+      criancas: this.criancas,
+      total: this.valorTotalReserva,
+      status: 'pendente'
+    };
+
+    reservas.push(novaReserva);
+    localStorage.setItem('reservas', JSON.stringify(reservas));
+
+    this.mensagemReserva = 'Reserva criada! Finalize o pagamento no WhatsApp';
   }
 
-  abrirModalReserva() {
-    this.mostrarModalReserva = true;
-  }
+  irParaPagamentoWhatsappUltima() {
+    const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
+    const r = reservas[reservas.length - 1];
 
-  fecharModalReserva() {
-    this.mostrarModalReserva = false;
-  }
-abrirImagem(imagem: string) {
-  this.indiceImagemAtual = this.hospedagemSelecionada.imagens.indexOf(imagem);
-  this.imagemSelecionada = imagem;
-  this.mostrarModalImagem = true;
-}
-proximaImagem() {
-  const total = this.hospedagemSelecionada.imagens.length;
-  this.indiceImagemAtual = (this.indiceImagemAtual + 1) % total;
-  this.imagemSelecionada = this.hospedagemSelecionada.imagens[this.indiceImagemAtual];
-}
+    if (!r) return;
 
-imagemAnterior() {
-  const total = this.hospedagemSelecionada.imagens.length;
-  this.indiceImagemAtual =
-    (this.indiceImagemAtual - 1 + total) % total;
-  this.imagemSelecionada = this.hospedagemSelecionada.imagens[this.indiceImagemAtual];
-}
+    const mensagem =
+`Olá! Quero finalizar o pagamento da minha reserva:
 
-fecharImagem() {
-  this.mostrarModalImagem = false;
-  this.imagemSelecionada = '';
-}
+Imóvel: ${r.titulo}
+Entrada: ${this.formatarData(r.dataEntrada)}
+Saída: ${this.formatarData(r.dataSaida)}
+Hóspedes: ${r.adultos + r.criancas}
+Total: R$ ${r.total}`;
 
-  voltar() {
-    this.router.navigate(['/home']);
+    const url = `https://wa.me/5511999999999?text=${encodeURIComponent(mensagem)}`;
+
+    window.open(url, '_blank');
   }
 
   entrarWhatsapp() {
-    const telefone = '5511999999999';
-
-    const mensagem =
-`Olá! Tenho interesse no imóvel ${this.hospedagemSelecionada.titulo}
-
-Local: ${this.hospedagemSelecionada.local} - Guarujá
-Preço: R$ ${this.hospedagemSelecionada.preco} por noite
-
-Datas: ${this.textoPeriodoReserva}
-Hóspedes: ${this.textoHospedesReserva}
-Total: R$ ${this.valorTotalReserva}`;
-
-    const url = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
-
-    window.open(url, '_blank');
+    window.open('https://wa.me/5511999999999', '_blank');
   }
 }

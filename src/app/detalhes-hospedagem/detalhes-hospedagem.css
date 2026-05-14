@@ -493,3 +493,28 @@
 .seta-imagem.direita {
   right: 40px;
 }
+.mensagem-reserva {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #e6f7ee;
+  color: #1a7f37;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid #b6e2c7;
+}
+.btn-pagamento {
+  margin-top: 10px;
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: #22c55e;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-pagamento:hover {
+  background: #16a34a;
+}

@@ -122,6 +122,16 @@
             Reservar
           </button>
 
+          @if (mensagemReserva) {
+            <div class="mensagem-reserva">
+              {{ mensagemReserva }}
+            </div>
+
+            <button class="btn-pagamento" (click)="irParaPagamentoWhatsappUltima()">
+              Ir para pagamento no WhatsApp
+            </button>
+          }
+
           <button class="whatsapp-btn" type="button" (click)="entrarWhatsapp()">
             Falar no WhatsApp
           </button>
@@ -157,7 +167,7 @@
         </div>
 
         <div class="modal-actions">
-          <button class="modal-btn-principal" type="button">
+          <button class="modal-btn-principal" type="button" (click)="irParaCadastro()">
             Criar cadastro
           </button>
 
@@ -168,40 +178,41 @@
       </div>
     </div>
 
-<div
-  class="modal-imagem-fundo"
-  *ngIf="mostrarModalImagem"
-  (click)="fecharImagem()"
->
-  <button
-    class="modal-imagem-fechar"
-    type="button"
-    (click)="fecharImagem()"
-  >
-    ×
-  </button>
+    <!-- MODAL IMAGEM -->
+    <div
+      class="modal-imagem-fundo"
+      *ngIf="mostrarModalImagem"
+      (click)="fecharImagem()"
+    >
+      <button
+        class="modal-imagem-fechar"
+        type="button"
+        (click)="fecharImagem()"
+      >
+        ×
+      </button>
 
-  <button
-    class="seta-imagem esquerda"
-    type="button"
-    (click)="imagemAnterior(); $event.stopPropagation()"
-  >
-    ‹
-  </button>
+      <button
+        class="seta-imagem esquerda"
+        type="button"
+        (click)="imagemAnterior(); $event.stopPropagation()"
+      >
+        ‹
+      </button>
 
-  <img
-    class="modal-imagem"
-    [src]="imagemSelecionada"
-    (click)="$event.stopPropagation()"
-  />
+      <img
+        class="modal-imagem"
+        [src]="imagemSelecionada"
+        (click)="$event.stopPropagation()"
+      />
 
-  <button
-    class="seta-imagem direita"
-    type="button"
-    (click)="proximaImagem(); $event.stopPropagation()"
-  >
-    ›
-  </button>
-</div>
+      <button
+        class="seta-imagem direita"
+        type="button"
+        (click)="proximaImagem(); $event.stopPropagation()"
+      >
+        ›
+      </button>
+    </div>
   </div>
 }

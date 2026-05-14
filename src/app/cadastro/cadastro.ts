@@ -3,17 +3,17 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-cadastro',
   standalone: true,
   imports: [FormsModule],
-  templateUrl: './login.html',
-  styleUrl: './login.css',
+  templateUrl: './cadastro.html',
+  styleUrl: './cadastro.css',
 })
-export class Login {
+export class Cadastro {
 
+  nome = '';
   email = '';
   senha = '';
-  erroLogin = '';
   idHospedagem: number | null = null;
 
   constructor(
@@ -25,28 +25,28 @@ export class Login {
     });
   }
 
-  login() {
-    const usuarioSalvo = localStorage.getItem('usuario');
+  irParaLogin() {
+    this.router.navigate(['/login'], {
+      queryParams: {
+        id: this.idHospedagem
+      }
+    });
+  }
 
-    if (!usuarioSalvo) {
-      this.erroLogin = 'Nenhum usuário cadastrado';
-      return;
-    }
+  criarCadastro() {
+    const usuario = {
+      nome: this.nome,
+      email: this.email,
+      senha: this.senha
+    };
 
-    const usuario = JSON.parse(usuarioSalvo);
+    localStorage.setItem('usuario', JSON.stringify(usuario));
 
-    if (this.email === usuario.email && this.senha === usuario.senha) {
-      this.erroLogin = '';
-
-      if (this.idHospedagem) {
+    if (this.idHospedagem) {
 this.router.navigate([`/detalhes/${this.idHospedagem}`], {
   queryParams: { abrirModal: true }
-});      } else {
-        this.router.navigate(['/home']);
-      }
-
-    } else {
-      this.erroLogin = 'E-mail ou senha inválidos';
+});    } else {
+      this.router.navigate(['/home']);
     }
   }
 

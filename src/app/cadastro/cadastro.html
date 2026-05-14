@@ -1,0 +1,29 @@
+<div class="cadastro-container">
+  <h1>Criar conta</h1>
+<input
+  type="text"
+  placeholder="Nome"
+  [(ngModel)]="nome"
+  (keyup.enter)="criarCadastro()"
+/>
+
+<input
+  type="email"
+  placeholder="E-mail"
+  [(ngModel)]="email"
+  (keyup.enter)="criarCadastro()"
+/>
+
+<input
+  type="password"
+  placeholder="Senha"
+  [(ngModel)]="senha"
+  (keyup.enter)="criarCadastro()"
+/>
+
+<button (click)="criarCadastro()">Criar cadastro</button>
+
+  <p>Já tem conta?</p>
+
+<button (click)="irParaLogin()">Ir para login</button>
+</div>

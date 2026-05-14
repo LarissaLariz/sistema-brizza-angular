@@ -1,0 +1,40 @@
+<div class="reservas-container">
+  <h1>Minhas Reservas</h1>
+
+  @if (reservas.length === 0) {
+    <p>Nenhuma reserva encontrada.</p>
+  }
+
+  @for (reserva of reservas; track reserva; let i = $index) {
+    <div class="reserva-card">
+
+      <h2>{{ reserva.titulo }}</h2>
+
+      <p>Entrada: {{ formatarData(reserva.dataEntrada) }}</p>
+<p>Saída: {{ formatarData(reserva.dataSaida) }}</p>
+      <p>Hóspedes: {{ reserva.adultos + reserva.criancas }}</p>
+
+      <p>
+        Status:
+        <span [class.pendente]="reserva.status === 'pendente'"
+              [class.pago]="reserva.status === 'pago'">
+          {{ reserva.status }}
+        </span>
+      </p>
+
+      <p>
+  {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) }}
+  {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) === 1 ? 'noite' : 'noites' }}
+</p>
+
+<strong>Total: R$ {{ reserva.total }}</strong>
+
+      @if (reserva.status === 'pendente') {
+        <button (click)="marcarComoPago(i)">
+          Marcar como pago
+        </button>
+      }
+
+    </div>
+  }
+</div>
