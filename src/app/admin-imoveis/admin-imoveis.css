@@ -1,0 +1,136 @@
+.admin-imoveis-container {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.admin-imoveis-container h1 {
+  font-size: 32px;
+  margin-bottom: 24px;
+}
+
+.form-card,
+.lista-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 32px;
+}
+
+.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-card h2,
+.lista-card h2 {
+  margin: 0 0 18px;
+  font-size: 24px;
+}
+
+.form-card label {
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.form-card input,
+.form-card textarea {
+  padding: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.form-card textarea {
+  min-height: 100px;
+}
+
+.preview-imagens {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.preview-imagens img {
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.comodidades-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.comodidade-opcao {
+  border: 1px solid #dbe3f0;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.form-card button {
+  margin-top: 20px;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.imovel-card {
+  display: flex;
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.imovel-card img {
+  width: 180px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.imovel-info h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.imovel-info p {
+  margin: 6px 0;
+}
+
+.comodidades-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.comodidades-lista span {
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.remover-btn {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: #ef4444;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
