@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -12,6 +12,15 @@ import { CommonModule } from '@angular/common';
 export class AdminImoveis {
   imoveis: any[] = [];
 
+  mostrarFormulario = false;
+  modoEdicao = false;
+  imovelEditandoId: number | null = null;
+
+  mensagemErro = '';
+  mensagemSucesso = '';
+
+  bairrosDisponiveis = ['Pitangueiras', 'Enseada', 'Astúrias', 'Tombo', 'Guaiúba', 'Centro'];
+
   comodidadesDisponiveis = [
     'Wi-Fi',
     'Piscina',
@@ -20,7 +29,7 @@ export class AdminImoveis {
     'Garagem',
     'TV',
     'Churrasqueira',
-    'Elevador'
+    'Elevador',
   ];
 
   novoImovel = {
@@ -31,28 +40,120 @@ export class AdminImoveis {
     hospedes: 0,
     quartos: 0,
     imagens: [] as string[],
-    comodidades: [] as string[]
+    comodidades: [] as string[],
   };
 
-  constructor() {
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone,
+  ) {
     const dados = localStorage.getItem('imoveis');
     this.imoveis = dados ? JSON.parse(dados) : [];
   }
 
-  selecionarImagens(event: Event) {
+  abrirFormularioAdicionar() {
+    this.limparFormulario();
+    this.mostrarFormulario = true;
+    this.modoEdicao = false;
+    this.imovelEditandoId = null;
+    this.mensagemErro = '';
+    this.mensagemSucesso = '';
+  }
+
+  editarImovel(imovel: any) {
+    this.novoImovel = {
+      titulo: imovel.titulo,
+      local: imovel.local,
+      descricao: imovel.descricao,
+      preco: imovel.preco,
+      hospedes: imovel.hospedes,
+      quartos: imovel.quartos,
+      imagens: [...imovel.imagens],
+      comodidades: [...imovel.comodidades],
+    };
+
+    this.mostrarFormulario = true;
+    this.modoEdicao = true;
+    this.imovelEditandoId = imovel.id;
+    this.mensagemErro = '';
+    this.mensagemSucesso = '';
+  }
+
+  cancelarFormulario() {
+    this.limparFormulario();
+    this.mostrarFormulario = false;
+    this.modoEdicao = false;
+    this.imovelEditandoId = null;
+    this.mensagemErro = '';
+    this.mensagemSucesso = '';
+  }
+
+  aumentarCampo(campo: 'hospedes' | 'quartos') {
+    this.novoImovel[campo]++;
+  }
+
+  diminuirCampo(campo: 'hospedes' | 'quartos') {
+    if (this.novoImovel[campo] > 0) {
+      this.novoImovel[campo]--;
+    }
+  }
+
+  async selecionarImagens(event: Event) {
     const input = event.target as HTMLInputElement;
 
-    if (!input.files) return;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
 
-    Array.from(input.files).forEach((arquivo) => {
+    const arquivos = Array.from(input.files);
+
+    input.value = '';
+
+    for (const arquivo of arquivos) {
+      const imagemReduzida = await this.converterImagemParaBase64Reduzida(arquivo);
+
+      this.zone.run(() => {
+        this.novoImovel.imagens = [...this.novoImovel.imagens, imagemReduzida];
+
+        this.cdr.detectChanges();
+      });
+    }
+  }
+
+  converterImagemParaBase64Reduzida(arquivo: File): Promise<string> {
+    return new Promise((resolve) => {
       const leitor = new FileReader();
 
       leitor.onload = () => {
-        this.novoImovel.imagens.push(leitor.result as string);
+        const imagem = new Image();
+
+        imagem.onload = () => {
+          const canvas = document.createElement('canvas');
+          const larguraMaxima = 900;
+          const proporcao = larguraMaxima / imagem.width;
+
+          canvas.width = larguraMaxima;
+          canvas.height = imagem.height * proporcao;
+
+          const contexto = canvas.getContext('2d');
+
+          if (contexto) {
+            contexto.drawImage(imagem, 0, 0, canvas.width, canvas.height);
+          }
+
+          const imagemReduzida = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(imagemReduzida);
+        };
+
+        imagem.src = leitor.result as string;
       };
 
       leitor.readAsDataURL(arquivo);
     });
+  }
+
+  removerImagem(index: number) {
+    this.novoImovel.imagens = this.novoImovel.imagens.filter((_, posicao) => posicao !== index);
   }
 
   alterarComodidade(comodidade: string, event: Event) {
@@ -62,32 +163,112 @@ export class AdminImoveis {
       this.novoImovel.comodidades.push(comodidade);
     } else {
       this.novoImovel.comodidades = this.novoImovel.comodidades.filter(
-        item => item !== comodidade
+        (item) => item !== comodidade,
       );
     }
   }
 
-  adicionarImovel() {
-    if (
-      !this.novoImovel.titulo ||
-      !this.novoImovel.local ||
-      !this.novoImovel.descricao ||
-      this.novoImovel.preco <= 0 ||
-      this.novoImovel.hospedes <= 0 ||
-      this.novoImovel.quartos <= 0 ||
-      this.novoImovel.imagens.length === 0
-    ) {
+  salvarImovel() {
+    this.mensagemErro = '';
+    this.mensagemSucesso = '';
+
+    if (!this.novoImovel.titulo) {
+      this.mensagemErro = 'Preencha o título do imóvel.';
       return;
     }
 
-    const imovel = {
-      id: new Date().getTime(),
-      ...this.novoImovel
-    };
+    if (!this.novoImovel.local) {
+      this.mensagemErro = 'Selecione a localização do imóvel.';
+      return;
+    }
 
-    this.imoveis.push(imovel);
-    localStorage.setItem('imoveis', JSON.stringify(this.imoveis));
+    if (!this.novoImovel.descricao) {
+      this.mensagemErro = 'Preencha a descrição do imóvel.';
+      return;
+    }
 
+    if (this.novoImovel.preco <= 0) {
+      this.mensagemErro = 'Informe um preço maior que zero.';
+      return;
+    }
+
+    if (this.novoImovel.hospedes <= 0) {
+      this.mensagemErro = 'Informe a quantidade de hóspedes.';
+      return;
+    }
+
+    if (this.novoImovel.quartos <= 0) {
+      this.mensagemErro = 'Informe a quantidade de quartos.';
+      return;
+    }
+
+    if (this.novoImovel.imagens.length === 0) {
+      this.mensagemErro = 'Adicione pelo menos uma foto do imóvel.';
+      return;
+    }
+
+    let novaLista: any[] = [];
+
+    if (this.modoEdicao && this.imovelEditandoId !== null) {
+      novaLista = this.imoveis.map((imovel) => {
+        if (imovel.id === this.imovelEditandoId) {
+          return {
+            id: this.imovelEditandoId,
+            ...this.novoImovel,
+          };
+        }
+
+        return imovel;
+      });
+    } else {
+      const imovel = {
+        id: new Date().getTime(),
+        ...this.novoImovel,
+      };
+
+      novaLista = [...this.imoveis, imovel];
+    }
+
+    const salvou = this.salvarNoLocalStorage(novaLista);
+
+    if (!salvou) {
+      this.mensagemErro =
+        'Não foi possível salvar. As imagens ainda estão muito pesadas para o navegador.';
+      return;
+    }
+
+    this.imoveis = novaLista;
+
+    this.limparFormulario();
+    this.mostrarFormulario = false;
+    this.modoEdicao = false;
+    this.imovelEditandoId = null;
+
+    this.mensagemSucesso = this.modoEdicao
+      ? 'Imóvel atualizado com sucesso!'
+      : 'Imóvel cadastrado com sucesso!';
+  }
+
+  salvarNoLocalStorage(lista: any[]) {
+    try {
+      localStorage.setItem('imoveis', JSON.stringify(lista));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  removerImovel(id: number) {
+    const novaLista = this.imoveis.filter((imovel) => imovel.id !== id);
+
+    const salvou = this.salvarNoLocalStorage(novaLista);
+
+    if (salvou) {
+      this.imoveis = novaLista;
+    }
+  }
+
+  limparFormulario() {
     this.novoImovel = {
       titulo: '',
       local: '',
@@ -96,12 +277,14 @@ export class AdminImoveis {
       hospedes: 0,
       quartos: 0,
       imagens: [],
-      comodidades: []
+      comodidades: [],
     };
   }
 
-  removerImovel(id: number) {
-    this.imoveis = this.imoveis.filter(imovel => imovel.id !== id);
-    localStorage.setItem('imoveis', JSON.stringify(this.imoveis));
+  formatarPreco(valor: number) {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(valor || 0);
   }
 }

@@ -11,18 +11,13 @@
 
       <div class="form-group">
         <input
-  type="text"
-  placeholder="E-mail ou Usuário"
-  [(ngModel)]="email"
-  (keyup.enter)="login()"
-/>
+          type="text"
+          placeholder="E-mail ou Usuário"
+          [(ngModel)]="email"
+          (keyup.enter)="login()"
+        />
 
-<input
-  type="password"
-  placeholder="Senha"
-  [(ngModel)]="senha"
-  (keyup.enter)="login()"
-/>
+        <input type="password" placeholder="Senha" [(ngModel)]="senha" (keyup.enter)="login()" />
 
         @if (erroLogin) {
           <div class="error">
@@ -30,7 +25,11 @@
           </div>
         }
 
-<button (click)="login()">Entrar</button>
+        <button type="button" (click)="login()">Entrar</button>
+
+        <button type="button" class="criar-conta-btn" (click)="irParaCadastro()">
+          Criar conta
+        </button>
 
         <div class="forgot-password">Esqueci minha senha</div>
 

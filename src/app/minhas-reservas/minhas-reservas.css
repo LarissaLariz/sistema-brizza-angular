@@ -1,37 +1,214 @@
 .reservas-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 40px auto;
   padding: 20px;
 }
 
-.reserva-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 16px;
-  background: white;
+.topo-reservas {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
 }
 
-.reserva-card h2 {
-  margin-bottom: 10px;
+.topo-reservas h1 {
+  margin: 0;
+  font-size: 32px;
 }
 
-button {
-  margin-top: 10px;
-  padding: 10px;
+.topo-reservas p {
+  margin: 8px 0 0;
+  color: #64748b;
+}
+
+.topo-acoes {
+  display: flex;
+  gap: 10px;
+}
+
+.home-btn,
+.sair-btn {
+  padding: 12px 16px;
   border: none;
-  border-radius: 8px;
-  background: #22c55e;
-  color: white;
+  border-radius: 10px;
+  font-weight: 700;
   cursor: pointer;
 }
 
+.home-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.sair-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.sem-reservas {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.sem-reservas h2 {
+  margin: 0 0 8px;
+}
+
+.sem-reservas p {
+  margin: 0;
+  color: #64748b;
+}
+
+.reserva-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 18px;
+  background: white;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.reserva-destacada {
+  border: 2px solid #2563eb;
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.18);
+}
+
+.reserva-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.reserva-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.reserva-header p {
+  margin: 8px 0 0;
+  color: #64748b;
+}
+
+.tag-recente {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.status {
+  height: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
 .pendente {
-  color: orange;
-  font-weight: bold;
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .pago {
-  color: green;
-  font-weight: bold;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.cancelada {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.reserva-info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.reserva-info p {
+  margin: 0;
+  color: #334155;
+}
+
+.reserva-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.reserva-total span {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.reserva-total strong {
+  color: #2563eb;
+  font-size: 22px;
+}
+
+.prazo-cancelamento {
+  margin: 0 0 14px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+}
+
+.reserva-acoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.whatsapp-btn,
+.cancelar-reserva-btn {
+  height: 46px;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.whatsapp-btn {
+  background: #22c55e;
+}
+
+.whatsapp-btn:hover {
+  background: #16a34a;
+}
+
+.cancelar-reserva-btn {
+  background: #ef4444;
+}
+
+.cancelar-reserva-btn:hover {
+  background: #dc2626;
+}
+
+.cancelamento-bloqueado {
+  min-height: 46px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  text-align: center;
 }

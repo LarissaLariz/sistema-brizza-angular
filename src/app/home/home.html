@@ -1,9 +1,30 @@
-<h1>Lofts Guarujá</h1>
+<header class="home-header">
+  <h1>Lofts Guarujá</h1>
+
+  <div class="home-auth-actions">
+    @if (usuarioLogado) {
+      <div class="usuario-logado">Olá, {{ usuarioLogado.nome || usuarioLogado.email }}</div>
+
+      <button type="button" class="minhas-reservas-btn" (click)="irParaMinhasReservas()">
+        Minhas reservas
+      </button>
+
+      <button type="button" class="sair-home-btn" (click)="sair()">Sair</button>
+    } @else {
+      <button type="button" class="entrar-home-btn" (click)="irParaLogin()">Entrar</button>
+
+      <button type="button" class="cadastro-home-btn" (click)="irParaCadastro()">
+        Cadastrar-se
+      </button>
+    }
+  </div>
+</header>
 
 <div class="search-shell">
   <div class="search-pill" (click)="$event.stopPropagation()" (keyup.enter)="buscar()" tabindex="0">
     <div class="search-segment location-segment">
       <span class="segment-title">Onde</span>
+
       <input
         class="search-input"
         type="text"
@@ -38,6 +59,7 @@
       <button
         class="location-option"
         *ngFor="let lugar of lugaresFiltrados"
+        type="button"
         (click)="selecionarLocal(lugar)"
       >
         {{ lugar }}
@@ -132,9 +154,23 @@
         </div>
 
         <div class="guest-counter">
-          <button class="counter-btn" type="button" (click)="alterarQuantidade('adultos', -1); $event.stopPropagation()">-</button>
+          <button
+            class="counter-btn"
+            type="button"
+            (click)="alterarQuantidade('adultos', -1); $event.stopPropagation()"
+          >
+            -
+          </button>
+
           <span>{{ adultos }}</span>
-          <button class="counter-btn" type="button" (click)="alterarQuantidade('adultos', 1); $event.stopPropagation()">+</button>
+
+          <button
+            class="counter-btn"
+            type="button"
+            (click)="alterarQuantidade('adultos', 1); $event.stopPropagation()"
+          >
+            +
+          </button>
         </div>
       </div>
 
@@ -145,9 +181,23 @@
         </div>
 
         <div class="guest-counter">
-          <button class="counter-btn" type="button" (click)="alterarQuantidade('criancas', -1); $event.stopPropagation()">-</button>
+          <button
+            class="counter-btn"
+            type="button"
+            (click)="alterarQuantidade('criancas', -1); $event.stopPropagation()"
+          >
+            -
+          </button>
+
           <span>{{ criancas }}</span>
-          <button class="counter-btn" type="button" (click)="alterarQuantidade('criancas', 1); $event.stopPropagation()">+</button>
+
+          <button
+            class="counter-btn"
+            type="button"
+            (click)="alterarQuantidade('criancas', 1); $event.stopPropagation()"
+          >
+            +
+          </button>
         </div>
       </div>
     </div>
@@ -159,16 +209,16 @@
 
   <div class="lista-hospedagens" #lista>
     <app-hospedagem-card
-  *ngFor="let item of hospedagensFiltradas"
-  [titulo]="item.titulo"
-  [descricao]="item.descricao"
-  [imagem]="item.imagem"
-  [hospedagem]="item"
-  [dataEntrada]="dataEntrada"
-  [dataSaida]="dataSaida"
-  [adultos]="adultos"
-  [criancas]="criancas"
-></app-hospedagem-card>
+      *ngFor="let item of hospedagensFiltradas"
+      [titulo]="item.titulo"
+      [descricao]="item.descricao"
+      [imagem]="item.imagem"
+      [hospedagem]="item"
+      [dataEntrada]="dataEntrada"
+      [dataSaida]="dataSaida"
+      [adultos]="adultos"
+      [criancas]="criancas"
+    ></app-hospedagem-card>
   </div>
 
   <button class="seta direita" type="button" (click)="scrollDireita()">›</button>

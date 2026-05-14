@@ -1,29 +1,30 @@
 <div class="cadastro-container">
-  <h1>Criar conta</h1>
-<input
-  type="text"
-  placeholder="Nome"
-  [(ngModel)]="nome"
-  (keyup.enter)="criarCadastro()"
-/>
+  <div class="cadastro-card">
+    <h1>Criar conta</h1>
 
-<input
-  type="email"
-  placeholder="E-mail"
-  [(ngModel)]="email"
-  (keyup.enter)="criarCadastro()"
-/>
+    <p class="cadastro-subtitulo">Crie sua conta para continuar sua reserva.</p>
 
-<input
-  type="password"
-  placeholder="Senha"
-  [(ngModel)]="senha"
-  (keyup.enter)="criarCadastro()"
-/>
+    <input type="text" placeholder="Nome" [(ngModel)]="nome" (keyup.enter)="criarCadastro()" />
 
-<button (click)="criarCadastro()">Criar cadastro</button>
+    <input type="email" placeholder="E-mail" [(ngModel)]="email" (keyup.enter)="criarCadastro()" />
 
-  <p>Já tem conta?</p>
+    <input
+      type="password"
+      placeholder="Senha"
+      [(ngModel)]="senha"
+      (keyup.enter)="criarCadastro()"
+    />
 
-<button (click)="irParaLogin()">Ir para login</button>
+    @if (erroCadastro) {
+      <div class="erro-cadastro">
+        {{ erroCadastro }}
+      </div>
+    }
+
+    <button type="button" class="criar-btn" (click)="criarCadastro()">Criar cadastro</button>
+
+    <p class="login-texto">Já tem conta?</p>
+
+    <button type="button" class="login-btn" (click)="irParaLogin()">Ir para login</button>
+  </div>
 </div>

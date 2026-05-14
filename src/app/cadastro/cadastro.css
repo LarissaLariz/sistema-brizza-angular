@@ -1,47 +1,91 @@
 .cadastro-container {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 16px;
   background: #f7f7f7;
+  padding: 24px;
 }
 
-.cadastro-container h1 {
+.cadastro-card {
+  width: 380px;
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cadastro-card h1 {
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
 }
 
-.cadastro-container input {
-  width: 300px;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+.cadastro-subtitulo {
+  margin: 0 0 8px;
+  text-align: center;
+  color: #64748b;
   font-size: 14px;
 }
 
-.cadastro-container input:focus {
+.cadastro-card input {
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
   outline: none;
-  border-color: #ff385c;
 }
 
-.cadastro-container button {
-  width: 300px;
-  padding: 12px;
+.cadastro-card input:focus {
+  border-color: #00a8a8;
+}
+
+.erro-cadastro {
+  padding: 10px;
   border-radius: 8px;
-  border: none;
-  background: #ff385c;
-  color: white;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 14px;
   font-weight: 600;
+  text-align: center;
+}
+
+.criar-btn,
+.login-btn {
+  height: 48px;
+  border-radius: 10px;
+  font-weight: 700;
   cursor: pointer;
 }
 
-.cadastro-container button:hover {
-  opacity: 0.9;
+.criar-btn {
+  border: none;
+  background: #00a8a8;
+  color: white;
 }
 
-.cadastro-container p {
+.criar-btn:hover {
+  background: #008c8c;
+}
+
+.login-texto {
+  margin: 8px 0 0;
+  text-align: center;
   font-size: 14px;
   color: #555;
+}
+
+.login-btn {
+  border: 1px solid #00a8a8;
+  background: white;
+  color: #00a8a8;
+}
+
+.login-btn:hover {
+  background: #e6ffff;
 }

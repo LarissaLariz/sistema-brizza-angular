@@ -1,47 +1,29 @@
 @if (hospedagemSelecionada) {
   <div class="detalhes-page">
     <div class="detalhes-topo">
-      <button class="botao-voltar" type="button" (click)="voltar()">
-        ← Voltar
-      </button>
+      <button class="botao-voltar" type="button" (click)="voltar()">← Voltar</button>
     </div>
 
     <div class="detalhes-card">
       <div class="galeria">
-        <div
-          class="imagem-principal"
-          (click)="abrirImagem(hospedagemSelecionada.imagens[0])"
-        >
-          <img [src]="hospedagemSelecionada.imagens[0]" />
-        </div>
+        @if (hospedagemSelecionada.imagens?.length > 0) {
+          <div class="imagem-principal" (click)="abrirImagem(hospedagemSelecionada.imagens[0])">
+            <img [src]="hospedagemSelecionada.imagens[0]" />
+          </div>
 
-        <div class="imagens-secundarias">
-          <img
-            [src]="hospedagemSelecionada.imagens[1]"
-            (click)="abrirImagem(hospedagemSelecionada.imagens[1])"
-          />
-          <img
-            [src]="hospedagemSelecionada.imagens[2]"
-            (click)="abrirImagem(hospedagemSelecionada.imagens[2])"
-          />
-          <img
-            [src]="hospedagemSelecionada.imagens[3]"
-            (click)="abrirImagem(hospedagemSelecionada.imagens[3])"
-          />
-          <img
-            [src]="hospedagemSelecionada.imagens[4]"
-            (click)="abrirImagem(hospedagemSelecionada.imagens[4])"
-          />
-        </div>
+          <div class="imagens-secundarias">
+            @for (imagem of hospedagemSelecionada.imagens.slice(1, 5); track $index) {
+              <img [src]="imagem" (click)="abrirImagem(imagem)" />
+            }
+          </div>
+        }
       </div>
 
       <div class="detalhes-conteudo">
         <div class="detalhes-info-area">
           <h1>{{ hospedagemSelecionada.titulo }}</h1>
 
-          <p class="detalhes-local">
-            {{ hospedagemSelecionada.local }} - Guarujá
-          </p>
+          <p class="detalhes-local">{{ hospedagemSelecionada.local }} - Guarujá</p>
 
           <p class="detalhes-info">
             {{ hospedagemSelecionada.hospedes }} hóspedes ·
@@ -69,19 +51,37 @@
 
         <div class="reserva-box">
           <div class="reserva-preco">
-            <strong>R$ {{ hospedagemSelecionada.preco }}</strong>
+            <strong>{{ formatarPreco(hospedagemSelecionada.preco) }}</strong>
             <span>/ noite</span>
           </div>
 
           <div class="reserva-dados">
-            <div class="reserva-campo">
+            <div class="reserva-campo" (click)="abrirSeletorData(entradaInput)">
               <label>Entrada</label>
-              <input type="date" [(ngModel)]="dataEntrada" />
+
+              <input
+                #entradaInput
+                type="date"
+                [(ngModel)]="dataEntrada"
+                (ngModelChange)="alterarDataEntrada()"
+                [min]="dataHoje"
+                [disabled]="preReservaCriada"
+                (click)="abrirSeletorData(entradaInput); $event.stopPropagation()"
+              />
             </div>
 
-            <div class="reserva-campo">
+            <div class="reserva-campo" (click)="abrirSeletorData(saidaInput)">
               <label>Saída</label>
-              <input type="date" [(ngModel)]="dataSaida" />
+
+              <input
+                #saidaInput
+                type="date"
+                [(ngModel)]="dataSaida"
+                (ngModelChange)="alterarDataSaida()"
+                [min]="dataEntrada || dataHoje"
+                [disabled]="preReservaCriada"
+                (click)="abrirSeletorData(saidaInput); $event.stopPropagation()"
+              />
             </div>
 
             <div class="reserva-contador">
@@ -91,9 +91,23 @@
               </div>
 
               <div class="contador-acoes">
-                <button type="button" (click)="alterarQuantidade('adultos', -1)">-</button>
+                <button
+                  type="button"
+                  [disabled]="preReservaCriada"
+                  (click)="alterarQuantidade('adultos', -1)"
+                >
+                  -
+                </button>
+
                 <span>{{ adultos }}</span>
-                <button type="button" (click)="alterarQuantidade('adultos', 1)">+</button>
+
+                <button
+                  type="button"
+                  [disabled]="preReservaCriada"
+                  (click)="alterarQuantidade('adultos', 1)"
+                >
+                  +
+                </button>
               </div>
             </div>
 
@@ -104,93 +118,106 @@
               </div>
 
               <div class="contador-acoes">
-                <button type="button" (click)="alterarQuantidade('criancas', -1)">-</button>
+                <button
+                  type="button"
+                  [disabled]="preReservaCriada"
+                  (click)="alterarQuantidade('criancas', -1)"
+                >
+                  -
+                </button>
+
                 <span>{{ criancas }}</span>
-                <button type="button" (click)="alterarQuantidade('criancas', 1)">+</button>
+
+                <button
+                  type="button"
+                  [disabled]="preReservaCriada"
+                  (click)="alterarQuantidade('criancas', 1)"
+                >
+                  +
+                </button>
               </div>
             </div>
           </div>
 
           <div class="reserva-total" *ngIf="quantidadeNoites > 0">
             <span>
-              R$ {{ hospedagemSelecionada.preco }} x {{ quantidadeNoites }} noite(s)
+              {{ formatarPreco(hospedagemSelecionada.preco) }} x {{ quantidadeNoites }} noite(s)
             </span>
-            <strong>R$ {{ valorTotalReserva }}</strong>
+
+            <strong>{{ formatarPreco(valorTotalReserva) }}</strong>
           </div>
 
-          <button class="reserva-btn" type="button" (click)="abrirModalReserva()">
-            Reservar
-          </button>
-
-          @if (mensagemReserva) {
-            <div class="mensagem-reserva">
-              {{ mensagemReserva }}
-            </div>
-
-            <button class="btn-pagamento" (click)="irParaPagamentoWhatsappUltima()">
-              Ir para pagamento no WhatsApp
+          @if (!preReservaCriada) {
+            <button class="reserva-btn" type="button" (click)="confirmarReserva()">
+              Solicitar reserva
             </button>
           }
 
-          <button class="whatsapp-btn" type="button" (click)="entrarWhatsapp()">
-            Falar no WhatsApp
-          </button>
+          @if (mensagemErroReserva) {
+            <div class="erro-reserva-card">
+              {{ mensagemErroReserva }}
+            </div>
+          }
+
+          @if (preReservaCriada) {
+            <div class="pagamento-card">
+              <div class="pagamento-icon">✓</div>
+
+              <h3>Solicitação registrada</h3>
+
+              <p>Sua reserva ainda não está confirmada. Realize o pagamento para confirmar.</p>
+
+              <button class="btn-pagamento" type="button" (click)="irParaPagamentoWhatsappUltima()">
+                Realizar pagamento
+              </button>
+
+              <button class="btn-minha-reserva" type="button" (click)="irParaMinhaReserva()">
+                Ir para minha reserva
+              </button>
+            </div>
+          }
         </div>
       </div>
     </div>
 
-    <!-- MODAL RESERVA -->
-    <div class="modal-fundo" *ngIf="mostrarModalReserva">
-      <div class="modal-reserva">
-        <button
-          class="modal-fechar"
-          type="button"
-          (click)="fecharModalReserva()"
-        >
-          ×
-        </button>
+    @if (mostrarModalAutenticacao) {
+      <div class="modal-fundo">
+        <div class="modal-reserva">
+          <button class="modal-fechar" type="button" (click)="fecharModalAutenticacao()">×</button>
 
-        <div class="modal-header">
-          <h2>Faça seu cadastro para reservar</h2>
-          <p>
-            Para continuar, entre na sua conta ou crie um cadastro rápido.
-          </p>
-        </div>
+          <div class="modal-header">
+            <h2>Entre para continuar</h2>
 
-        <div class="modal-resumo">
-          <strong>{{ hospedagemSelecionada.titulo }}</strong>
-          <span>{{ textoPeriodoReserva }}</span>
-          <span>{{ textoHospedesReserva }}</span>
-          <span *ngIf="quantidadeNoites > 0">
-            Total: R$ {{ valorTotalReserva }}
-          </span>
-        </div>
+            <p>Para solicitar sua reserva, entre na sua conta ou crie um cadastro rápido.</p>
+          </div>
 
-        <div class="modal-actions">
-          <button class="modal-btn-principal" type="button" (click)="irParaCadastro()">
-            Criar cadastro
-          </button>
+          <div class="modal-resumo">
+            <strong>{{ hospedagemSelecionada.titulo }}</strong>
 
-          <button class="modal-btn-secundario" type="button">
-            Já tenho conta
-          </button>
+            <span> Entrada: {{ formatarData(dataEntrada || '') }} </span>
+
+            <span> Saída: {{ formatarData(dataSaida || '') }} </span>
+
+            <span> Hóspedes: {{ adultos + criancas }} </span>
+
+            <span> Total: {{ formatarPreco(valorTotalReserva) }} </span>
+          </div>
+
+          <div class="modal-actions">
+            <button class="modal-btn-principal" type="button" (click)="irParaCadastroReserva()">
+              Criar conta
+            </button>
+
+            <button class="modal-btn-secundario" type="button" (click)="irParaLoginReserva()">
+              Já tenho conta
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    }
 
-    <!-- MODAL IMAGEM -->
-    <div
-      class="modal-imagem-fundo"
-      *ngIf="mostrarModalImagem"
-      (click)="fecharImagem()"
-    >
-      <button
-        class="modal-imagem-fechar"
-        type="button"
-        (click)="fecharImagem()"
-      >
-        ×
-      </button>
+    <div class="modal-imagem-fundo" *ngIf="mostrarModalImagem" (click)="fecharImagem()">
+      <button class="modal-imagem-fechar" type="button" (click)="fecharImagem()">×</button>
 
       <button
         class="seta-imagem esquerda"
@@ -200,11 +227,7 @@
         ‹
       </button>
 
-      <img
-        class="modal-imagem"
-        [src]="imagemSelecionada"
-        (click)="$event.stopPropagation()"
-      />
+      <img class="modal-imagem" [src]="imagemSelecionada" (click)="$event.stopPropagation()" />
 
       <button
         class="seta-imagem direita"

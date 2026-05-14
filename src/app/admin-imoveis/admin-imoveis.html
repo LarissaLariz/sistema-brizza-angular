@@ -1,56 +1,135 @@
 <div class="admin-imoveis-container">
-  <h1>Gerenciar Imóveis</h1>
-
-  <section class="form-card">
-    <h2>Adicionar novo imóvel</h2>
-
-    <label>Título do imóvel</label>
-    <input type="text" [(ngModel)]="novoImovel.titulo" />
-
-    <label>Localização</label>
-    <input type="text" [(ngModel)]="novoImovel.local" />
-
-    <label>Descrição</label>
-    <textarea [(ngModel)]="novoImovel.descricao"></textarea>
-
-    <label>Preço por noite</label>
-    <input type="number" [(ngModel)]="novoImovel.preco" />
-
-    <label>Quantidade de hóspedes</label>
-    <input type="number" [(ngModel)]="novoImovel.hospedes" />
-
-    <label>Quantidade de quartos</label>
-    <input type="number" [(ngModel)]="novoImovel.quartos" />
-
-    <label>Fotos do imóvel</label>
-    <input type="file" multiple accept="image/*" (change)="selecionarImagens($event)" />
-
-    @if (novoImovel.imagens.length > 0) {
-      <div class="preview-imagens">
-        @for (imagem of novoImovel.imagens; track imagem) {
-          <img [src]="imagem" />
-        }
-      </div>
-    }
-
-    <label>O que este lugar oferece</label>
-
-    <div class="comodidades-grid">
-      @for (comodidade of comodidadesDisponiveis; track comodidade) {
-        <label class="comodidade-opcao">
-          <input
-            type="checkbox"
-            (change)="alterarComodidade(comodidade, $event)"
-          />
-          {{ comodidade }}
-        </label>
-      }
+  <div class="topo-admin">
+    <div>
+      <h1>Gerenciar Imóveis</h1>
+      <p>Cadastre, edite e remova os imóveis disponíveis.</p>
     </div>
 
-    <button type="button" (click)="adicionarImovel()">
-      Adicionar imóvel
+    <button type="button" class="novo-btn" (click)="abrirFormularioAdicionar()">
+      Adicionar novo imóvel
     </button>
-  </section>
+  </div>
+
+  @if (mostrarFormulario) {
+    <section class="form-card">
+      <div class="form-header">
+        <h2>
+          @if (modoEdicao) {
+            Editar imóvel
+          } @else {
+            Adicionar novo imóvel
+          }
+        </h2>
+
+        <button type="button" class="cancelar-btn" (click)="cancelarFormulario()">Cancelar</button>
+      </div>
+
+      <label>Título do imóvel</label>
+      <input type="text" [(ngModel)]="novoImovel.titulo" />
+
+      <label>Localização</label>
+      <select [(ngModel)]="novoImovel.local">
+        <option value="" disabled>Selecione uma localização</option>
+
+        @for (bairro of bairrosDisponiveis; track bairro) {
+          <option [value]="bairro">
+            {{ bairro }}
+          </option>
+        }
+      </select>
+
+      <label>Descrição</label>
+      <textarea [(ngModel)]="novoImovel.descricao"></textarea>
+
+      <label>Preço por noite</label>
+      <input type="number" [(ngModel)]="novoImovel.preco" />
+
+      <p class="preco-formatado">{{ formatarPreco(novoImovel.preco) }} por noite</p>
+
+      <div class="contadores-grid">
+        <div>
+          <label>Quantidade de hóspedes</label>
+
+          <div class="contador-box">
+            <button type="button" (click)="diminuirCampo('hospedes')">-</button>
+            <span>{{ novoImovel.hospedes }}</span>
+            <button type="button" (click)="aumentarCampo('hospedes')">+</button>
+          </div>
+        </div>
+
+        <div>
+          <label>Quantidade de quartos</label>
+
+          <div class="contador-box">
+            <button type="button" (click)="diminuirCampo('quartos')">-</button>
+            <span>{{ novoImovel.quartos }}</span>
+            <button type="button" (click)="aumentarCampo('quartos')">+</button>
+          </div>
+        </div>
+      </div>
+
+      <label>Fotos do imóvel</label>
+
+      <label class="upload-label" for="upload-imagens"> Escolher fotos do imóvel </label>
+
+      <input
+        id="upload-imagens"
+        class="upload-input-escondido"
+        type="file"
+        multiple
+        accept="image/*"
+        (change)="selecionarImagens($event)"
+      />
+
+      @if (novoImovel.imagens.length > 0) {
+        <p class="contador-imagens">{{ novoImovel.imagens.length }} imagem(ns) selecionada(s)</p>
+
+        <div class="preview-imagens">
+          @for (imagem of novoImovel.imagens; track $index) {
+            <div class="preview-item">
+              <img [src]="imagem" alt="Foto do imóvel" />
+
+              <button type="button" class="remover-imagem-btn" (click)="removerImagem($index)">
+                ×
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <label>O que este lugar oferece</label>
+
+      <div class="comodidades-grid">
+        @for (comodidade of comodidadesDisponiveis; track comodidade) {
+          <label class="comodidade-opcao">
+            <input
+              type="checkbox"
+              [checked]="novoImovel.comodidades.includes(comodidade)"
+              (change)="alterarComodidade(comodidade, $event)"
+            />
+
+            {{ comodidade }}
+          </label>
+        }
+      </div>
+
+      @if (mensagemErro) {
+        <p class="mensagem-erro">{{ mensagemErro }}</p>
+      }
+
+      @if (mensagemSucesso) {
+        <p class="mensagem-sucesso">{{ mensagemSucesso }}</p>
+      }
+
+      <button type="button" class="salvar-btn" (click)="salvarImovel()">
+        @if (modoEdicao) {
+          Salvar alterações
+        } @else {
+          Adicionar imóvel
+        }
+      </button>
+    </section>
+  }
 
   <section class="lista-card">
     <h2>Imóveis cadastrados</h2>
@@ -62,14 +141,18 @@
     @for (imovel of imoveis; track imovel.id) {
       <div class="imovel-card">
         @if (imovel.imagens?.length > 0) {
-          <img [src]="imovel.imagens[0]" />
+          <img [src]="imovel.imagens[0]" alt="Foto principal do imóvel" />
         }
 
         <div class="imovel-info">
           <h3>{{ imovel.titulo }}</h3>
+
           <p>{{ imovel.local }}</p>
+
           <p>{{ imovel.descricao }}</p>
-          <p>R$ {{ imovel.preco }} / noite</p>
+
+          <p class="preco-lista">{{ formatarPreco(imovel.preco) }} / noite</p>
+
           <p>{{ imovel.hospedes }} hóspedes · {{ imovel.quartos }} quarto(s)</p>
 
           @if (imovel.comodidades?.length > 0) {
@@ -80,9 +163,13 @@
             </div>
           }
 
-          <button type="button" class="remover-btn" (click)="removerImovel(imovel.id)">
-            Remover
-          </button>
+          <div class="acoes-card">
+            <button type="button" class="editar-btn" (click)="editarImovel(imovel)">Editar</button>
+
+            <button type="button" class="remover-btn" (click)="removerImovel(imovel.id)">
+              Remover
+            </button>
+          </div>
         </div>
       </div>
     }

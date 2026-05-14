@@ -1,3 +1,67 @@
+.home-header {
+  max-width: 1200px;
+  margin: 28px auto 0;
+  padding: 0 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.home-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.home-auth-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.entrar-home-btn,
+.cadastro-home-btn,
+.minhas-reservas-btn,
+.sair-home-btn {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.entrar-home-btn {
+  border: 1px solid #dddddd;
+  background: white;
+  color: #111827;
+}
+
+.cadastro-home-btn,
+.minhas-reservas-btn {
+  border: none;
+  background: #00a8a8;
+  color: white;
+}
+
+.sair-home-btn {
+  border: none;
+  background: #ef4444;
+  color: white;
+}
+
+.entrar-home-btn:hover {
+  background: #f7f7f7;
+}
+
+.cadastro-home-btn:hover,
+.minhas-reservas-btn:hover {
+  background: #008c8c;
+}
+
+.sair-home-btn:hover {
+  background: #dc2626;
+}
+
 .search-shell {
   display: flex;
   justify-content: center;
@@ -90,6 +154,7 @@
   background: #eeeeee;
   border-color: #bbbbbb;
 }
+
 .location-segment {
   position: relative;
 }
@@ -259,4 +324,13 @@
 
 .seta.direita {
   right: 8px;
+}
+.usuario-logado {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  background: #f1f5f9;
+  padding: 10px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
 }

@@ -1,40 +1,115 @@
 <div class="reservas-container">
-  <h1>Minhas Reservas</h1>
+  <div class="topo-reservas">
+    <div>
+      <h1>Minhas Reservas</h1>
+
+      @if (usuarioLogado) {
+        <p>Olá, {{ usuarioLogado.nome }}. Aqui estão suas reservas.</p>
+      }
+    </div>
+
+    <div class="topo-acoes">
+      <button type="button" class="home-btn" (click)="voltarParaHome()">Voltar para home</button>
+
+      <button type="button" class="sair-btn" (click)="sair()">Sair</button>
+    </div>
+  </div>
 
   @if (reservas.length === 0) {
-    <p>Nenhuma reserva encontrada.</p>
+    <div class="sem-reservas">
+      <h2>Nenhuma reserva encontrada</h2>
+      <p>Quando você fizer uma reserva, ela aparecerá aqui.</p>
+    </div>
   }
 
-  @for (reserva of reservas; track reserva; let i = $index) {
-    <div class="reserva-card">
+  @for (reserva of reservas; track reserva.id) {
+    <div
+      class="reserva-card"
+      [id]="'reserva-' + reserva.id"
+      [class.reserva-destacada]="reserva.id === reservaDestacadaId"
+    >
+      <div class="reserva-header">
+        <div>
+          <h2>{{ reserva.titulo }}</h2>
 
-      <h2>{{ reserva.titulo }}</h2>
+          @if (reserva.id === reservaDestacadaId) {
+            <span class="tag-recente"> Solicitação mais recente </span>
+          }
 
-      <p>Entrada: {{ formatarData(reserva.dataEntrada) }}</p>
-<p>Saída: {{ formatarData(reserva.dataSaida) }}</p>
-      <p>Hóspedes: {{ reserva.adultos + reserva.criancas }}</p>
+          @if (reserva.status === 'pendente') {
+            <p>Pagamento pendente</p>
+          }
 
-      <p>
-        Status:
-        <span [class.pendente]="reserva.status === 'pendente'"
-              [class.pago]="reserva.status === 'pago'">
+          @if (reserva.status === 'pago') {
+            <p>Reserva paga</p>
+          }
+
+          @if (reserva.status === 'cancelada') {
+            <p>Reserva cancelada</p>
+          }
+        </div>
+
+        <span
+          class="status"
+          [class.pendente]="reserva.status === 'pendente'"
+          [class.pago]="reserva.status === 'pago'"
+          [class.cancelada]="reserva.status === 'cancelada'"
+        >
           {{ reserva.status }}
         </span>
-      </p>
+      </div>
 
-      <p>
-  {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) }}
-  {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) === 1 ? 'noite' : 'noites' }}
-</p>
+      <div class="reserva-info">
+        <p>
+          <strong>Entrada:</strong>
+          {{ formatarData(reserva.dataEntrada) }}
+        </p>
 
-<strong>Total: R$ {{ reserva.total }}</strong>
+        <p>
+          <strong>Saída:</strong>
+          {{ formatarData(reserva.dataSaida) }}
+        </p>
+
+        <p>
+          <strong>Hóspedes:</strong>
+          {{ reserva.adultos + reserva.criancas }}
+        </p>
+
+        <p>
+          <strong>Período:</strong>
+          {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) }}
+          {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) === 1 ? 'noite' : 'noites' }}
+        </p>
+      </div>
+
+      <div class="reserva-total">
+        <span>Total</span>
+        <strong>{{ formatarPreco(reserva.total) }}</strong>
+      </div>
 
       @if (reserva.status === 'pendente') {
-        <button (click)="marcarComoPago(i)">
-          Marcar como pago
-        </button>
-      }
+        <p class="prazo-cancelamento">
+          {{ mensagemCancelamento(reserva) }}
+        </p>
 
+        <div class="reserva-acoes">
+          <button type="button" class="whatsapp-btn" (click)="finalizarPeloWhatsapp(reserva)">
+            Realizar pagamento
+          </button>
+
+          @if (podeCancelarReserva(reserva)) {
+            <button
+              type="button"
+              class="cancelar-reserva-btn"
+              (click)="cancelarReserva(reserva.id)"
+            >
+              Cancelar reserva
+            </button>
+          } @else {
+            <div class="cancelamento-bloqueado">Cancelamento gratuito indisponível</div>
+          }
+        </div>
+      }
     </div>
   }
 </div>
