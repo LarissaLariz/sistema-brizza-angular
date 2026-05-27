@@ -1,0 +1,171 @@
+<div class="admin-reservas-container">
+  <header class="topo">
+    <div>
+      <p class="subtitulo">Painel Administrativo</p>
+      <h1>Gerenciar Reservas</h1>
+    </div>
+
+    <button type="button" class="btn-voltar" (click)="voltarParaPainel()">
+      Voltar ao painel
+    </button>
+  </header>
+
+  <section class="resumo">
+    <div class="card-resumo">
+      <span>Total</span>
+      <strong>{{ reservas.length }}</strong>
+    </div>
+
+    <div class="card-resumo pendente">
+      <span>Pendentes</span>
+      <strong>{{ contarReservasPorStatus('pendente') }}</strong>
+    </div>
+
+    <div class="card-resumo pago">
+      <span>Pagas</span>
+      <strong>{{ contarReservasPorStatus('pago') }}</strong>
+    </div>
+
+    <div class="card-resumo cancelada">
+      <span>Canceladas</span>
+      <strong>{{ contarReservasPorStatus('cancelada') }}</strong>
+    </div>
+  </section>
+
+  <section class="filtros">
+    <label for="status">Filtrar por status:</label>
+
+    <select id="status" [(ngModel)]="filtroStatus">
+      <option value="todas">Todas</option>
+      <option value="pendente">Pendentes</option>
+      <option value="pago">Pagas</option>
+      <option value="cancelada">Canceladas</option>
+    </select>
+  </section>
+
+  <section *ngIf="reservasFiltradas.length === 0" class="sem-reservas">
+    <h2>Nenhuma reserva encontrada</h2>
+    <p>Ainda não existe nenhuma reserva com esse filtro.</p>
+  </section>
+
+  <section class="lista-reservas" *ngIf="reservasFiltradas.length > 0">
+    <article class="reserva-card" *ngFor="let reserva of reservasFiltradas">
+      <div class="reserva-cabecalho">
+        <div>
+          <h2>{{ reserva.titulo || 'Imóvel não informado' }}</h2>
+
+          <p>
+            Reserva #
+            {{ reserva.id || 'sem ID' }}
+          </p>
+        </div>
+
+        <span class="status" [ngClass]="reserva.status || 'pendente'">
+          {{ reserva.status || 'pendente' }}
+        </span>
+      </div>
+
+      <div class="reserva-info">
+        <div>
+          <span>Responsável</span>
+          <strong>{{ obterNomeResponsavel(reserva) }}</strong>
+        </div>
+
+        <div>
+          <span>E-mail do responsável</span>
+          <strong>{{ obterEmailResponsavel(reserva) }}</strong>
+        </div>
+
+        <div>
+          <span>País</span>
+          <strong>{{ obterPaisResponsavel(reserva) }}</strong>
+        </div>
+
+        <div>
+          <span>Tipo de documento</span>
+          <strong>{{ obterTipoDocumento(reserva) }}</strong>
+        </div>
+
+        <div>
+          <span>Número do documento</span>
+          <strong>{{ obterDocumento(reserva) }}</strong>
+        </div>
+
+        <div>
+          <span>Telefone</span>
+          <strong>{{ obterTelefone(reserva) }}</strong>
+        </div>
+
+        <div>
+          <span>Usuário da conta</span>
+          <strong>{{ reserva.usuarioNome || 'Usuário não informado' }}</strong>
+        </div>
+
+        <div>
+          <span>E-mail da conta</span>
+          <strong>{{ reserva.usuarioEmail || 'E-mail não informado' }}</strong>
+        </div>
+
+        <div>
+          <span>Entrada</span>
+          <strong>{{ formatarData(reserva.dataEntrada) }}</strong>
+        </div>
+
+        <div>
+          <span>Saída</span>
+          <strong>{{ formatarData(reserva.dataSaida) }}</strong>
+        </div>
+
+        <div>
+          <span>Hóspedes</span>
+          <strong>
+            {{ calcularHospedes(reserva) }}
+            pessoa(s)
+          </strong>
+        </div>
+
+        <div>
+          <span>Adultos</span>
+          <strong>{{ reserva.adultos || 0 }}</strong>
+        </div>
+
+        <div>
+          <span>Crianças</span>
+          <strong>{{ reserva.criancas || 0 }}</strong>
+        </div>
+
+        <div>
+          <span>Total</span>
+          <strong>{{ formatarTotal(reserva.total) }}</strong>
+        </div>
+
+        <div>
+          <span>Criada em</span>
+          <strong>
+            {{ reserva.dataCriacao ? (reserva.dataCriacao | date: 'dd/MM/yyyy HH:mm') : 'Data não informada' }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="acoes">
+        <button
+          class="btn-pago"
+          type="button"
+          (click)="marcarComoPaga(reserva)"
+          [disabled]="reserva.status === 'pago' || reserva.status === 'cancelada'"
+        >
+          Marcar como paga
+        </button>
+
+        <button
+          class="btn-cancelar"
+          type="button"
+          (click)="cancelarReserva(reserva)"
+          [disabled]="reserva.status === 'cancelada'"
+        >
+          Cancelar reserva
+        </button>
+      </div>
+    </article>
+  </section>
+</div>

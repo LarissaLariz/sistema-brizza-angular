@@ -139,6 +139,133 @@
             </div>
           </div>
 
+          @if (usuarioEstaLogado && !preReservaCriada) {
+            <div class="responsavel-area">
+              <h3>Dados do responsável</h3>
+
+              <p>
+                Informe os dados da pessoa responsável por esta reserva. Para hóspedes de fora do
+                Brasil, selecione outro país e use passaporte ou outro documento.
+              </p>
+
+              <div class="responsavel-grid">
+                <div class="reserva-campo responsavel-campo">
+                  <label>Nome completo</label>
+
+                  <input
+                    type="text"
+                    [value]="responsavelNome"
+                    (input)="formatarNomeInput($event)"
+                    placeholder="Ex: Maria Silva"
+                    maxlength="80"
+                    [disabled]="preReservaCriada"
+                  />
+                </div>
+
+                <div class="reserva-campo responsavel-campo">
+                  <label>E-mail</label>
+
+                  <input
+                    type="email"
+                    [value]="responsavelEmail"
+                    (input)="formatarEmailInput($event)"
+                    placeholder="Ex: maria@email.com"
+                    maxlength="120"
+                    [disabled]="preReservaCriada"
+                  />
+                </div>
+
+                <div class="reserva-campo responsavel-campo">
+                  <label>País</label>
+
+                  <select
+                    [ngModel]="responsavelPais"
+                    (ngModelChange)="alterarPaisResponsavel($event)"
+                    [disabled]="preReservaCriada"
+                  >
+                    <option value="Brasil">Brasil</option>
+                    <option value="Argentina">Argentina</option>
+                    <option value="Chile">Chile</option>
+                    <option value="Uruguai">Uruguai</option>
+                    <option value="Paraguai">Paraguai</option>
+                    <option value="Estados Unidos">Estados Unidos</option>
+                    <option value="Portugal">Portugal</option>
+                    <option value="Espanha">Espanha</option>
+                    <option value="França">França</option>
+                    <option value="Itália">Itália</option>
+                    <option value="Alemanha">Alemanha</option>
+                    <option value="Reino Unido">Reino Unido</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+                </div>
+
+                <div class="reserva-campo responsavel-campo">
+                  <label>Tipo de documento</label>
+
+                  <select
+                    [ngModel]="responsavelTipoDocumento"
+                    (ngModelChange)="alterarTipoDocumento($event)"
+                    [disabled]="preReservaCriada || responsavelPais === 'Brasil'"
+                  >
+                    <option value="cpf">CPF</option>
+                    <option value="passaporte">Passaporte</option>
+                    <option value="outro">Outro documento</option>
+                  </select>
+                </div>
+
+                <div class="reserva-campo responsavel-campo">
+                  <label>Número do documento</label>
+
+                  <input
+                    type="text"
+                    [value]="responsavelDocumento"
+                    (input)="formatarDocumentoInput($event)"
+                    [placeholder]="
+                      responsavelTipoDocumento === 'cpf'
+                        ? '000.000.000-00'
+                        : responsavelTipoDocumento === 'passaporte'
+                          ? 'Ex: AB123456'
+                          : 'Ex: Documento de identidade'
+                    "
+                    [attr.maxlength]="
+                      responsavelTipoDocumento === 'cpf'
+                        ? 14
+                        : responsavelTipoDocumento === 'passaporte'
+                          ? 20
+                          : 30
+                    "
+                    [attr.inputmode]="responsavelTipoDocumento === 'cpf' ? 'numeric' : 'text'"
+                    [disabled]="preReservaCriada"
+                  />
+                </div>
+
+                <div class="reserva-campo responsavel-campo">
+                  <label>Telefone</label>
+
+                  <input
+                    type="tel"
+                    [value]="responsavelTelefone"
+                    (input)="formatarTelefoneInput($event)"
+                    placeholder="Ex: (13) 99999-9999 ou +54 9 11 1234"
+                    maxlength="25"
+                    [disabled]="preReservaCriada"
+                  />
+                </div>
+              </div>
+            </div>
+          }
+
+          @if (!usuarioEstaLogado && !preReservaCriada) {
+            <div class="aviso-login-reserva">
+              <strong>Dados do responsável</strong>
+
+              <p>
+                Para informar documento e telefone, entre na sua conta ou crie um cadastro rápido ao
+                solicitar a reserva.
+              </p>
+            </div>
+          }
+
           <div class="reserva-total" *ngIf="quantidadeNoites > 0">
             <span>
               {{ formatarPreco(hospedagemSelecionada.preco) }} x {{ quantidadeNoites }} noite(s)
@@ -188,7 +315,10 @@
           <div class="modal-header">
             <h2>Entre para continuar</h2>
 
-            <p>Para solicitar sua reserva, entre na sua conta ou crie um cadastro rápido.</p>
+            <p>
+              Para solicitar sua reserva, entre na sua conta ou crie um cadastro rápido.
+              Depois disso, você informará os dados do responsável pela reserva.
+            </p>
           </div>
 
           <div class="modal-resumo">

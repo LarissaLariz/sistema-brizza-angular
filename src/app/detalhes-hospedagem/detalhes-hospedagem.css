@@ -180,6 +180,7 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
+  cursor: pointer;
 }
 
 .reserva-campo label {
@@ -190,7 +191,8 @@
   letter-spacing: 0.6px;
 }
 
-.reserva-campo input {
+.reserva-campo input,
+.reserva-campo select {
   width: 100%;
   border: none;
   outline: none;
@@ -198,6 +200,26 @@
   font-size: 15px;
   color: #111827;
   font-weight: 600;
+}
+
+.reserva-campo input {
+  cursor: pointer;
+}
+
+.reserva-campo select {
+  cursor: pointer;
+}
+
+.reserva-campo input::placeholder {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.reserva-campo input:disabled,
+.reserva-campo select:disabled,
+.contador-acoes button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .reserva-contador {
@@ -256,6 +278,69 @@
   color: #111827;
 }
 
+.responsavel-area {
+  margin: 18px 0 16px;
+  padding: 16px;
+  border: 1px solid #dbe3f0;
+  border-radius: 18px;
+  background: #f8fbff;
+}
+
+.responsavel-area h3 {
+  margin: 0 0 6px;
+  color: #111827;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.responsavel-area p {
+  margin: 0 0 14px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.responsavel-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.responsavel-campo {
+  background: #ffffff;
+  cursor: default;
+}
+
+.responsavel-campo input {
+  cursor: text;
+}
+
+.responsavel-campo select {
+  cursor: pointer;
+}
+
+.aviso-login-reserva {
+  margin: 18px 0 16px;
+  padding: 16px;
+  border: 1px solid #bfdbfe;
+  border-radius: 18px;
+  background: #eff6ff;
+}
+
+.aviso-login-reserva strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #1d4ed8;
+  font-size: 15px;
+}
+
+.aviso-login-reserva p {
+  margin: 0;
+  color: #2563eb;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .reserva-total {
   display: flex;
   justify-content: space-between;
@@ -292,6 +377,17 @@
 
 .reserva-btn:hover {
   background: #3b82f6;
+}
+
+.erro-reserva-card {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-weight: 700;
+  text-align: center;
 }
 
 .pagamento-card {
@@ -344,6 +440,23 @@
 
 .btn-pagamento:hover {
   background: #16a34a;
+}
+
+.btn-minha-reserva {
+  width: 100%;
+  height: 48px;
+  margin-top: 10px;
+  border: 1px solid #22c55e;
+  border-radius: 12px;
+  background: white;
+  color: #166534;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn-minha-reserva:hover {
+  background: #dcfce7;
 }
 
 .modal-fundo {
@@ -529,42 +642,64 @@
 .seta-imagem.direita {
   right: 40px;
 }
-.erro-reserva-card {
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 14px;
-  background: #fee2e2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  font-weight: 700;
-  text-align: center;
+
+@media (max-width: 900px) {
+  .detalhes-conteudo {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .reserva-box {
+    max-width: 480px;
+  }
 }
 
-.reserva-campo input:disabled,
-.contador-acoes button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-minha-reserva {
-  width: 100%;
-  height: 48px;
-  margin-top: 10px;
-  border: 1px solid #22c55e;
-  border-radius: 12px;
-  background: white;
-  color: #166534;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-}
+@media (max-width: 700px) {
+  .detalhes-page {
+    padding: 16px;
+  }
 
-.btn-minha-reserva:hover {
-  background: #dcfce7;
-}
-.reserva-campo {
-  cursor: pointer;
-}
+  .galeria {
+    flex-direction: column;
+  }
 
-.reserva-campo input {
-  cursor: pointer;
+  .imagem-principal img {
+    height: 260px;
+    border-radius: 14px;
+  }
+
+  .imagens-secundarias {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .imagens-secundarias img {
+    height: 130px;
+    border-radius: 12px;
+  }
+
+  .imagens-secundarias img:nth-child(2),
+  .imagens-secundarias img:nth-child(4) {
+    border-radius: 12px;
+  }
+
+  .detalhes-conteudo {
+    padding: 22px 0;
+  }
+
+  .comodidades-lista {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-reserva {
+    width: 100%;
+    padding: 24px;
+  }
+
+  .seta-imagem.esquerda {
+    left: 16px;
+  }
+
+  .seta-imagem.direita {
+    right: 16px;
+  }
 }
