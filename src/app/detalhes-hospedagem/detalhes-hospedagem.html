@@ -56,33 +56,112 @@
           </div>
 
           <div class="reserva-dados">
-            <div class="reserva-campo" (click)="abrirSeletorData(entradaInput)">
-              <label>Entrada</label>
-
-              <input
-                #entradaInput
-                type="date"
-                [(ngModel)]="dataEntrada"
-                (ngModelChange)="alterarDataEntrada()"
-                [min]="dataHoje"
+            <div class="datas-grid">
+              <button
+                class="reserva-campo data-campo"
+                type="button"
+                [class.ativo]="calendarioAberto === 'entrada'"
                 [disabled]="preReservaCriada"
-                (click)="abrirSeletorData(entradaInput); $event.stopPropagation()"
-              />
+                (click)="abrirCalendario('entrada')"
+              >
+                <label>Entrada</label>
+
+                <span>
+                  {{ dataEntrada ? formatarData(dataEntrada) : 'Selecionar entrada' }}
+                </span>
+              </button>
+
+              <button
+                class="reserva-campo data-campo"
+                type="button"
+                [class.ativo]="calendarioAberto === 'saida'"
+                [disabled]="preReservaCriada"
+                (click)="abrirCalendario('saida')"
+              >
+                <label>Saída</label>
+
+                <span>
+                  {{ dataSaida ? formatarData(dataSaida) : 'Selecionar saída' }}
+                </span>
+              </button>
             </div>
 
-            <div class="reserva-campo" (click)="abrirSeletorData(saidaInput)">
-              <label>Saída</label>
+            @if (calendarioAberto) {
+              <div class="calendario-reserva">
+                <div class="calendario-topo">
+                  <button type="button" (click)="voltarMesCalendario()">‹</button>
 
-              <input
-                #saidaInput
-                type="date"
-                [(ngModel)]="dataSaida"
-                (ngModelChange)="alterarDataSaida()"
-                [min]="dataEntrada || dataHoje"
-                [disabled]="preReservaCriada"
-                (click)="abrirSeletorData(saidaInput); $event.stopPropagation()"
-              />
-            </div>
+                  <div>
+                    <strong>{{ mesAnoCalendario }}</strong>
+
+                    <span>
+                      {{
+                        calendarioAberto === 'entrada'
+                          ? 'Selecione a data de entrada'
+                          : 'Selecione a data de saída'
+                      }}
+                    </span>
+                  </div>
+
+                  <button type="button" (click)="avancarMesCalendario()">›</button>
+                </div>
+
+                <div class="calendario-semana">
+                  <span *ngFor="let diaSemana of diasSemana">
+                    {{ diaSemana }}
+                  </span>
+                </div>
+
+                <div class="calendario-grid">
+                  <div
+                    class="calendario-dia-wrapper"
+                    *ngFor="let dia of diasCalendario"
+                    [class.tem-tooltip]="dia.bloqueada && dia.motivoBloqueio"
+                  >
+                    <button
+                      type="button"
+                      class="calendario-dia"
+                      [class.vazio]="!dia.data"
+                      [class.hoje]="dia.hoje"
+                      [class.passado]="dia.passada"
+                      [class.bloqueado]="dia.bloqueada"
+                      [class.selecionado]="dia.selecionada"
+                      [class.intervalo]="dia.noIntervalo"
+                      [class.saida-limite]="
+                        calendarioAberto === 'saida' && dia.bloqueada && !diaDesabilitado(dia)
+                      "
+                      [disabled]="diaDesabilitado(dia)"
+                      (click)="selecionarDiaCalendario(dia)"
+                    >
+                      {{ dia.numero || '' }}
+                    </button>
+
+                    @if (dia.bloqueada && dia.motivoBloqueio) {
+                      <div class="tooltip-calendario">
+                        {{ dia.motivoBloqueio }}
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="calendario-legenda">
+                  <span>
+                    <i class="legenda-disponivel"></i>
+                    Disponível
+                  </span>
+
+                  <span>
+                    <i class="legenda-selecionado"></i>
+                    Selecionado
+                  </span>
+
+                  <span>
+                    <i class="legenda-bloqueado"></i>
+                    Bloqueado
+                  </span>
+                </div>
+              </div>
+            }
 
             <div class="reserva-contador">
               <div class="contador-texto">

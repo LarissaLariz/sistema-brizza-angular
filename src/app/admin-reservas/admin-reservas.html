@@ -30,6 +30,110 @@
       <span>Canceladas</span>
       <strong>{{ contarReservasPorStatus('cancelada') }}</strong>
     </div>
+
+    <div class="card-resumo bloqueio">
+      <span>Bloqueios</span>
+      <strong>{{ bloqueiosDatas.length }}</strong>
+    </div>
+  </section>
+
+  <section class="bloqueio-manual">
+    <div class="bloqueio-header">
+      <div>
+        <h2>Bloquear datas manualmente</h2>
+        <p>
+          Use esta área quando uma reserva for fechada por fora do site, como WhatsApp,
+          Instagram, Booking, Airbnb, manutenção ou uso próprio.
+        </p>
+      </div>
+    </div>
+
+    <div class="bloqueio-form">
+      <div class="form-campo">
+        <label>Imóvel</label>
+
+        <select [(ngModel)]="bloqueioImovelId">
+          <option [ngValue]="null">Selecione um imóvel</option>
+
+          <option *ngFor="let imovel of imoveisDisponiveis" [ngValue]="imovel.id">
+            {{ imovel.titulo }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-campo">
+        <label>Data inicial</label>
+
+        <input
+          type="date"
+          [(ngModel)]="bloqueioDataEntrada"
+          [min]="dataHoje"
+        />
+      </div>
+
+      <div class="form-campo">
+        <label>Data final</label>
+
+        <input
+          type="date"
+          [(ngModel)]="bloqueioDataSaida"
+          [min]="bloqueioDataEntrada || dataHoje"
+        />
+      </div>
+
+      <div class="form-campo">
+        <label>Motivo</label>
+
+        <input
+          type="text"
+          [(ngModel)]="bloqueioMotivo"
+          placeholder="Ex: Reserva pelo WhatsApp"
+          maxlength="80"
+        />
+      </div>
+
+      <button class="btn-bloquear" type="button" (click)="bloquearPeriodoManual()">
+        Bloquear período
+      </button>
+    </div>
+
+    <div class="erro-bloqueio" *ngIf="erroBloqueio">
+      {{ erroBloqueio }}
+    </div>
+
+    <div class="sucesso-bloqueio" *ngIf="mensagemBloqueio">
+      {{ mensagemBloqueio }}
+    </div>
+
+    <div class="lista-bloqueios" *ngIf="bloqueiosDatas.length > 0">
+      <h3>Períodos bloqueados manualmente</h3>
+
+      <article class="bloqueio-card" *ngFor="let bloqueio of bloqueiosDatas">
+        <div>
+          <strong>{{ bloqueio.titulo }}</strong>
+
+          <p>
+            {{ formatarData(bloqueio.dataEntrada) }}
+            até
+            {{ formatarData(bloqueio.dataSaida) }}
+          </p>
+
+          <span>{{ bloqueio.motivo }}</span>
+        </div>
+
+        <button
+          class="btn-remover-bloqueio"
+          type="button"
+          (click)="removerBloqueio(bloqueio)"
+        >
+          Remover bloqueio
+        </button>
+      </article>
+    </div>
+
+    <div class="sem-bloqueios" *ngIf="bloqueiosDatas.length === 0">
+      Nenhum período bloqueado manualmente.
+    </div>
   </section>
 
   <section class="filtros">
@@ -142,7 +246,11 @@
         <div>
           <span>Criada em</span>
           <strong>
-            {{ reserva.dataCriacao ? (reserva.dataCriacao | date: 'dd/MM/yyyy HH:mm') : 'Data não informada' }}
+            {{
+              reserva.dataCriacao
+                ? (reserva.dataCriacao | date: 'dd/MM/yyyy HH:mm')
+                : 'Data não informada'
+            }}
           </strong>
         </div>
       </div>

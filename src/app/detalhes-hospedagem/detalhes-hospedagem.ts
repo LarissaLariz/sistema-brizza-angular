@@ -40,6 +40,30 @@ export class DetalhesHospedagem {
   preReservaCriada = false;
   ultimaReservaId: number | null = null;
 
+  calendarioAberto: 'entrada' | 'saida' | null = null;
+
+  mesCalendario = 0;
+  anoCalendario = 0;
+
+  diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  mesesCalendario = [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
+  ];
+
+  diasCalendario: any[] = [];
+
   hospedagens: any[] = [
     {
       id: 1,
@@ -99,6 +123,11 @@ export class DetalhesHospedagem {
   ) {
     this.dataHoje = this.gerarDataHoje();
 
+    const hoje = new Date(`${this.dataHoje}T00:00:00`);
+
+    this.mesCalendario = hoje.getMonth();
+    this.anoCalendario = hoje.getFullYear();
+
     this.carregarImoveisDoAdmin();
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -112,6 +141,13 @@ export class DetalhesHospedagem {
       this.dataSaida = params['dataSaida'] || null;
       this.adultos = Number(params['adultos'] || 0);
       this.criancas = Number(params['criancas'] || 0);
+
+      if (this.dataEntrada) {
+        this.definirMesCalendarioPorData(this.dataEntrada);
+      }
+
+      this.montarCalendario();
+      this.verificarDisponibilidadeSelecionada();
     });
   }
 
@@ -134,19 +170,6 @@ export class DetalhesHospedagem {
     }
   }
 
-  abrirSeletorData(input: HTMLInputElement) {
-    if (this.preReservaCriada) {
-      return;
-    }
-
-    if ((input as any).showPicker) {
-      (input as any).showPicker();
-      return;
-    }
-
-    input.focus();
-  }
-
   alterarDataEntrada() {
     this.mensagemErroReserva = '';
 
@@ -159,11 +182,31 @@ export class DetalhesHospedagem {
 
     if (saida <= entrada) {
       this.dataSaida = null;
+      this.montarCalendario();
+      return;
     }
+
+    this.verificarDisponibilidadeSelecionada();
+    this.montarCalendario();
   }
 
   alterarDataSaida() {
     this.mensagemErroReserva = '';
+
+    if (!this.dataEntrada || !this.dataSaida) {
+      return;
+    }
+
+    const entrada = new Date(`${this.dataEntrada}T00:00:00`);
+    const saida = new Date(`${this.dataSaida}T00:00:00`);
+
+    if (saida <= entrada) {
+      this.mensagemErroReserva = 'A data de saída deve ser depois da data de entrada.';
+      return;
+    }
+
+    this.verificarDisponibilidadeSelecionada();
+    this.montarCalendario();
   }
 
   gerarDataHoje() {
@@ -589,6 +632,389 @@ export class DetalhesHospedagem {
     return 'Outro documento';
   }
 
+  get mesAnoCalendario() {
+    return `${this.mesesCalendario[this.mesCalendario]} ${this.anoCalendario}`;
+  }
+
+  abrirCalendario(tipo: 'entrada' | 'saida') {
+    if (this.preReservaCriada) {
+      return;
+    }
+
+    this.calendarioAberto = tipo;
+    this.mensagemErroReserva = '';
+
+    if (tipo === 'entrada' && this.dataEntrada) {
+      this.definirMesCalendarioPorData(this.dataEntrada);
+    } else if (tipo === 'saida' && this.dataSaida) {
+      this.definirMesCalendarioPorData(this.dataSaida);
+    } else if (this.dataEntrada) {
+      this.definirMesCalendarioPorData(this.dataEntrada);
+    } else {
+      this.definirMesCalendarioPorData(this.dataHoje);
+    }
+
+    this.montarCalendario();
+  }
+
+  definirMesCalendarioPorData(data: string) {
+    const dataBase = new Date(`${data}T00:00:00`);
+
+    this.mesCalendario = dataBase.getMonth();
+    this.anoCalendario = dataBase.getFullYear();
+  }
+
+  voltarMesCalendario() {
+    if (this.mesCalendario === 0) {
+      this.mesCalendario = 11;
+      this.anoCalendario--;
+    } else {
+      this.mesCalendario--;
+    }
+
+    this.montarCalendario();
+  }
+
+  avancarMesCalendario() {
+    if (this.mesCalendario === 11) {
+      this.mesCalendario = 0;
+      this.anoCalendario++;
+    } else {
+      this.mesCalendario++;
+    }
+
+    this.montarCalendario();
+  }
+
+  formatarDataInput(data: Date) {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  montarCalendario() {
+    const primeiroDiaDoMes = new Date(this.anoCalendario, this.mesCalendario, 1);
+    const ultimoDiaDoMes = new Date(this.anoCalendario, this.mesCalendario + 1, 0);
+
+    const diaSemanaInicial = primeiroDiaDoMes.getDay();
+    const totalDiasMes = ultimoDiaDoMes.getDate();
+
+    const dias: any[] = [];
+
+    for (let i = 0; i < diaSemanaInicial; i++) {
+      dias.push({
+        data: null,
+        numero: null,
+        vazia: true,
+        bloqueada: false,
+        passada: false,
+        hoje: false,
+        selecionada: false,
+        noIntervalo: false,
+        motivoBloqueio: '',
+      });
+    }
+
+    for (let dia = 1; dia <= totalDiasMes; dia++) {
+      const dataAtual = this.formatarDataInput(
+        new Date(this.anoCalendario, this.mesCalendario, dia)
+      );
+
+      const bloqueio = this.obterBloqueioDaData(dataAtual);
+
+      dias.push({
+        data: dataAtual,
+        numero: dia,
+        vazia: false,
+        bloqueada: !!bloqueio,
+        passada: dataAtual < this.dataHoje,
+        hoje: dataAtual === this.dataHoje,
+        selecionada: dataAtual === this.dataEntrada || dataAtual === this.dataSaida,
+        noIntervalo: this.dataEstaNoIntervaloSelecionado(dataAtual),
+        motivoBloqueio: bloqueio ? this.montarMotivoBloqueio(bloqueio) : '',
+      });
+    }
+
+    while (dias.length % 7 !== 0) {
+      dias.push({
+        data: null,
+        numero: null,
+        vazia: true,
+        bloqueada: false,
+        passada: false,
+        hoje: false,
+        selecionada: false,
+        noIntervalo: false,
+        motivoBloqueio: '',
+      });
+    }
+
+    this.diasCalendario = dias;
+  }
+
+  dataEstaNoIntervaloSelecionado(data: string) {
+    if (!this.dataEntrada || !this.dataSaida) {
+      return false;
+    }
+
+    return data > this.dataEntrada && data < this.dataSaida;
+  }
+
+  buscarReservasSalvas() {
+    try {
+      return JSON.parse(localStorage.getItem('reservas') || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  buscarBloqueiosManuaisSalvos() {
+    try {
+      return JSON.parse(localStorage.getItem('bloqueiosDatas') || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  dataDentroDoPeriodo(data: string, entrada: string, saida: string) {
+    return data >= entrada && data < saida;
+  }
+
+  obterBloqueioDaData(data: string) {
+    if (!this.hospedagemSelecionada) {
+      return null;
+    }
+
+    const reservas = this.buscarReservasSalvas();
+
+    const reservaEncontrada = reservas.find((reserva: any) => {
+      const mesmaHospedagemPorId =
+        String(reserva.imovelId) === String(this.hospedagemSelecionada.id);
+
+      const mesmaHospedagemAntiga =
+        !reserva.imovelId && reserva.titulo === this.hospedagemSelecionada.titulo;
+
+      const mesmaHospedagem = mesmaHospedagemPorId || mesmaHospedagemAntiga;
+
+      const status = reserva.status || 'pendente';
+
+      const reservaBloqueia = status === 'pendente' || status === 'pago';
+
+      if (
+        !mesmaHospedagem ||
+        !reservaBloqueia ||
+        !reserva.dataEntrada ||
+        !reserva.dataSaida
+      ) {
+        return false;
+      }
+
+      return this.dataDentroDoPeriodo(data, reserva.dataEntrada, reserva.dataSaida);
+    });
+
+    if (reservaEncontrada) {
+      return {
+        tipo: 'reserva',
+        status: reservaEncontrada.status || 'pendente',
+        dataEntrada: reservaEncontrada.dataEntrada,
+        dataSaida: reservaEncontrada.dataSaida,
+      };
+    }
+
+    const bloqueios = this.buscarBloqueiosManuaisSalvos();
+
+    const bloqueioEncontrado = bloqueios.find((bloqueio: any) => {
+      const mesmaHospedagem =
+        String(bloqueio.imovelId) === String(this.hospedagemSelecionada.id);
+
+      if (!mesmaHospedagem || !bloqueio.dataEntrada || !bloqueio.dataSaida) {
+        return false;
+      }
+
+      return this.dataDentroDoPeriodo(data, bloqueio.dataEntrada, bloqueio.dataSaida);
+    });
+
+    if (bloqueioEncontrado) {
+      return {
+        tipo: 'bloqueio',
+        motivo: bloqueioEncontrado.motivo,
+        dataEntrada: bloqueioEncontrado.dataEntrada,
+        dataSaida: bloqueioEncontrado.dataSaida,
+      };
+    }
+
+    return null;
+  }
+
+  montarMotivoBloqueio(bloqueio: any) {
+    return `Indisponível de ${this.formatarData(
+      bloqueio.dataEntrada
+    )} até ${this.formatarData(bloqueio.dataSaida)}`;
+  }
+
+  buscarBloqueioNoPeriodo(entrada: string, saida: string) {
+    let dataAtual = new Date(`${entrada}T00:00:00`);
+    const dataFinal = new Date(`${saida}T00:00:00`);
+
+    while (dataAtual < dataFinal) {
+      const dataFormatada = this.formatarDataInput(dataAtual);
+      const bloqueio = this.obterBloqueioDaData(dataFormatada);
+
+      if (bloqueio) {
+        return bloqueio;
+      }
+
+      dataAtual.setDate(dataAtual.getDate() + 1);
+    }
+
+    return null;
+  }
+
+  diaDesabilitado(dia: any) {
+    if (!dia.data) {
+      return true;
+    }
+
+    if (this.preReservaCriada) {
+      return true;
+    }
+
+    if (dia.passada) {
+      return true;
+    }
+
+    if (this.calendarioAberto === 'entrada') {
+      return dia.bloqueada;
+    }
+
+    if (this.calendarioAberto === 'saida') {
+      if (!this.dataEntrada) {
+        return true;
+      }
+
+      if (dia.data <= this.dataEntrada) {
+        return true;
+      }
+
+      const bloqueioNoPeriodo = this.buscarBloqueioNoPeriodo(this.dataEntrada, dia.data);
+
+      return !!bloqueioNoPeriodo;
+    }
+
+    return false;
+  }
+
+  obterTituloDia(dia: any) {
+    if (!dia.data) {
+      return '';
+    }
+
+    if (dia.passada) {
+      return 'Data indisponível';
+    }
+
+    if (this.calendarioAberto === 'saida' && dia.bloqueada && !this.diaDesabilitado(dia)) {
+      return 'Permitido como data de saída';
+    }
+
+    if (dia.motivoBloqueio) {
+      return dia.motivoBloqueio;
+    }
+
+    return 'Data disponível';
+  }
+
+  selecionarDiaCalendario(dia: any) {
+    if (this.diaDesabilitado(dia)) {
+      return;
+    }
+
+    if (!dia.data) {
+      return;
+    }
+
+    const dataSelecionada = String(dia.data);
+
+    this.mensagemErroReserva = '';
+
+    if (this.calendarioAberto === 'entrada') {
+      this.dataEntrada = dataSelecionada;
+
+      const saidaAtual = this.dataSaida;
+
+      if (
+        saidaAtual &&
+        (saidaAtual <= dataSelecionada ||
+          this.buscarBloqueioNoPeriodo(dataSelecionada, saidaAtual))
+      ) {
+        this.dataSaida = null;
+      }
+
+      this.calendarioAberto = 'saida';
+      this.montarCalendario();
+      return;
+    }
+
+    if (this.calendarioAberto === 'saida') {
+      const entradaAtual = this.dataEntrada;
+
+      if (!entradaAtual) {
+        this.mensagemErroReserva = 'Selecione primeiro a data de entrada.';
+        this.calendarioAberto = 'entrada';
+        this.montarCalendario();
+        return;
+      }
+
+      if (dataSelecionada <= entradaAtual) {
+        this.mensagemErroReserva = 'A data de saída deve ser depois da data de entrada.';
+        return;
+      }
+
+      const bloqueioNoPeriodo = this.buscarBloqueioNoPeriodo(
+        entradaAtual,
+        dataSelecionada
+      );
+
+      if (bloqueioNoPeriodo) {
+        this.mensagemErroReserva =
+          this.montarMensagemPeriodoIndisponivel(bloqueioNoPeriodo);
+        return;
+      }
+
+      this.dataSaida = dataSelecionada;
+      this.calendarioAberto = null;
+      this.verificarDisponibilidadeSelecionada();
+      this.montarCalendario();
+    }
+  }
+
+  buscarPeriodoIndisponivel() {
+    if (!this.dataEntrada || !this.dataSaida) {
+      return null;
+    }
+
+    return this.buscarBloqueioNoPeriodo(this.dataEntrada, this.dataSaida);
+  }
+
+  montarMensagemPeriodoIndisponivel(bloqueio: any) {
+    return `Este período não está disponível. Escolha outras datas.`;
+  }
+
+  verificarDisponibilidadeSelecionada() {
+    if (!this.dataEntrada || !this.dataSaida) {
+      return;
+    }
+
+    const bloqueioNoPeriodo = this.buscarPeriodoIndisponivel();
+
+    if (bloqueioNoPeriodo) {
+      this.mensagemErroReserva =
+        this.montarMensagemPeriodoIndisponivel(bloqueioNoPeriodo);
+    }
+  }
+
   confirmarReserva() {
     if (this.preReservaCriada) {
       return;
@@ -618,6 +1044,14 @@ export class DetalhesHospedagem {
 
     if (this.adultos + this.criancas === 0) {
       this.mensagemErroReserva = 'Informe pelo menos 1 hóspede.';
+      return;
+    }
+
+    const periodoIndisponivel = this.buscarPeriodoIndisponivel();
+
+    if (periodoIndisponivel) {
+      this.mensagemErroReserva =
+        this.montarMensagemPeriodoIndisponivel(periodoIndisponivel);
       return;
     }
 
@@ -738,6 +1172,8 @@ export class DetalhesHospedagem {
     this.preReservaCriada = true;
     this.mensagemReserva =
       'Solicitação registrada. Sua reserva ainda não está confirmada. Realize o pagamento para confirmar.';
+
+    this.montarCalendario();
   }
 
   fecharModalAutenticacao() {
