@@ -3,6 +3,7 @@ import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HospedagemCard } from '../hospedagem-card/hospedagem-card';
+import { Imoveis } from '../services/imoveis';
 
 @Component({
   selector: 'app-home',
@@ -31,79 +32,48 @@ export class Home {
 
   mesAtualCalendario = this.criarMesCalendario(this.hoje.getFullYear(), this.hoje.getMonth());
 
-  proximoMesCalendario = this.criarMesCalendario(this.hoje.getFullYear(), this.hoje.getMonth() + 1);
+  proximoMesCalendario = this.criarMesCalendario(
+    this.hoje.getFullYear(),
+    this.hoje.getMonth() + 1,
+  );
 
   lugares = ['Pitangueiras', 'Enseada', 'Astúrias', 'Tombo', 'Guaiúba', 'Centro'];
 
-  hospedagens: any[] = [
-    {
-      id: 1,
-      titulo: 'Golden Beach 158',
-      local: 'Pitangueiras',
-      descricao: 'No Guarujá, bem no coração da cidade',
-      imagem: '/images/imagem1.jpeg',
-      imagens: ['/images/imagem1.jpeg', '/images/imagem2.jpeg', '/images/imagem3.jpeg'],
-      preco: 200,
-    },
-    {
-      id: 2,
-      titulo: 'Loft no centro',
-      local: 'Tombo',
-      descricao: 'Vista para a cidade',
-      imagem: '/images/imagem2.jpeg',
-      imagens: ['/images/imagem2.jpeg', '/images/imagem1.jpeg', '/images/imagem3.jpeg'],
-      preco: 180,
-    },
-    {
-      id: 3,
-      titulo: 'Loft na serra',
-      local: 'Astúrias',
-      descricao: 'Vista para a montanha',
-      imagem: '/images/imagem3.jpeg',
-      imagens: ['/images/imagem3.jpeg', '/images/imagem1.jpeg', '/images/imagem2.jpeg'],
-      preco: 220,
-    },
-  ];
+  hospedagens: any[] = [];
 
   hospedagensFiltradas: any[] = [];
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private imoveisService: Imoveis,
+  ) {
     const usuario = localStorage.getItem('usuarioLogado');
     this.usuarioLogado = usuario ? JSON.parse(usuario) : null;
 
-    this.carregarImoveisDoAdmin();
+    this.carregarImoveisDaApi();
   }
 
-  carregarImoveisDoAdmin() {
-    const dados = localStorage.getItem('imoveis');
+  carregarImoveisDaApi() {
+    this.imoveisService.listarImoveis().subscribe({
+      next: (imoveisDoBanco) => {
+       this.hospedagens = imoveisDoBanco.map((imovel: any) => ({
+  id: Number(imovel.id),
+  titulo: imovel.nome,
+  local: imovel.cidade,
+  descricao: imovel.descricao,
+  imagem: '/images/imagem1.jpeg',
+  imagens: ['/images/imagem1.jpeg', '/images/imagem2.jpeg', '/images/imagem3.jpeg'],
+  preco: Number(imovel.preco_por_noite),
+  hospedes: Number(imovel.capacidade_maxima),
+  quartos: 1,
+        }));
 
-    if (!dados) {
-      this.hospedagensFiltradas = [...this.hospedagens];
-      return;
-    }
-
-    try {
-      const imoveisAdmin = JSON.parse(dados);
-
-      const mapa = new Map<number, any>();
-
-      this.hospedagens.forEach((imovel) => {
-        mapa.set(imovel.id, imovel);
-      });
-
-      imoveisAdmin.forEach((imovel: any) => {
-        mapa.set(imovel.id, {
-          ...imovel,
-          imagem: imovel.imagens?.[0] || '',
-        });
-      });
-
-      this.hospedagens = Array.from(mapa.values());
-
-      this.hospedagensFiltradas = [...this.hospedagens];
-    } catch {
-      this.hospedagensFiltradas = [...this.hospedagens];
-    }
+        this.hospedagensFiltradas = [...this.hospedagens];
+      },
+      error: (erro) => {
+        console.error('Erro ao carregar imóveis da API:', erro);
+      },
+    });
   }
 
   criarMesCalendario(ano: number, mes: number) {
@@ -262,6 +232,7 @@ export class Home {
 
     this.dataSaida = data;
   }
+
   alterarQuantidade(tipo: 'adultos' | 'criancas', valor: number) {
     const total = this.adultos + this.criancas;
 
@@ -320,6 +291,7 @@ export class Home {
     this.usuarioLogado = null;
     this.router.navigate(['/home']);
   }
+
   atualizarCalendario() {
     this.mesAtualCalendario = this.criarMesCalendario(
       this.hoje.getFullYear(),
@@ -341,6 +313,7 @@ export class Home {
     this.hoje = new Date(this.hoje.getFullYear(), this.hoje.getMonth() - 1, 1);
     this.atualizarCalendario();
   }
+
   dataEstaNoPassado(data: string) {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -349,6 +322,7 @@ export class Home {
 
     return dataComparada < hoje;
   }
+
   dataEstaNoIntervalo(data: string) {
     if (!this.dataEntrada || !this.dataSaida) {
       return false;
