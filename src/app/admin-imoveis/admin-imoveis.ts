@@ -32,6 +32,49 @@ export class AdminImoveis {
     'Elevador',
   ];
 
+  imoveisFixos = [
+    {
+      id: 1,
+      origem: 'fixo',
+      titulo: 'Golden Beach 158',
+      local: 'Pitangueiras',
+      descricao: 'Hospedagem confortável no Guarujá...',
+      imagens: [
+        '/images/imagem1.jpeg',
+        '/images/imagem2.jpeg',
+        '/images/imagem3.jpeg',
+      ],
+      preco: 200,
+      hospedes: 4,
+      quartos: 1,
+      comodidades: ['Wi-Fi', 'Piscina', 'Ar-condicionado', 'Cozinha'],
+    },
+    {
+      id: 2,
+      origem: 'fixo',
+      titulo: 'Loft no centro',
+      local: 'Tombo',
+      descricao: 'Vista para a cidade',
+      imagens: ['/images/imagem2.jpeg', '/images/imagem1.jpeg', '/images/imagem3.jpeg'],
+      preco: 180,
+      hospedes: 4,
+      quartos: 1,
+      comodidades: ['Wi-Fi', 'Cozinha'],
+    },
+    {
+      id: 3,
+      origem: 'fixo',
+      titulo: 'Loft na serra',
+      local: 'Astúrias',
+      descricao: 'Vista para a montanha',
+      imagens: ['/images/imagem3.jpeg', '/images/imagem1.jpeg', '/images/imagem2.jpeg'],
+      preco: 220,
+      hospedes: 4,
+      quartos: 1,
+      comodidades: ['Wi-Fi', 'Ar-condicionado'],
+    },
+  ];
+
   novoImovel = {
     titulo: '',
     local: '',
@@ -47,8 +90,27 @@ export class AdminImoveis {
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
   ) {
+    this.carregarImoveis();
+  }
+
+  carregarImoveis() {
     const dados = localStorage.getItem('imoveis');
-    this.imoveis = dados ? JSON.parse(dados) : [];
+    const imoveisSalvos = dados ? JSON.parse(dados) : [];
+
+    const mapa = new Map<number, any>();
+
+    this.imoveisFixos.forEach((imovel) => {
+      mapa.set(imovel.id, imovel);
+    });
+
+    imoveisSalvos.forEach((imovel: any) => {
+      mapa.set(imovel.id, {
+        ...imovel,
+        origem: imovel.origem || 'criado',
+      });
+    });
+
+    this.imoveis = Array.from(mapa.values());
   }
 
   abrirFormularioAdicionar() {
@@ -68,8 +130,8 @@ export class AdminImoveis {
       preco: imovel.preco,
       hospedes: imovel.hospedes,
       quartos: imovel.quartos,
-      imagens: [...imovel.imagens],
-      comodidades: [...imovel.comodidades],
+      imagens: [...(imovel.imagens || [])],
+      comodidades: [...(imovel.comodidades || [])],
     };
 
     this.mostrarFormulario = true;
@@ -106,7 +168,6 @@ export class AdminImoveis {
     }
 
     const arquivos = Array.from(input.files);
-
     input.value = '';
 
     for (const arquivo of arquivos) {
@@ -114,7 +175,6 @@ export class AdminImoveis {
 
       this.zone.run(() => {
         this.novoImovel.imagens = [...this.novoImovel.imagens, imagemReduzida];
-
         this.cdr.detectChanges();
       });
     }
@@ -207,29 +267,46 @@ export class AdminImoveis {
       return;
     }
 
-    let novaLista: any[] = [];
+    const dados = localStorage.getItem('imoveis');
+    const imoveisSalvos = dados ? JSON.parse(dados) : [];
+
+    let novaListaSalva: any[] = [];
 
     if (this.modoEdicao && this.imovelEditandoId !== null) {
-      novaLista = this.imoveis.map((imovel) => {
-        if (imovel.id === this.imovelEditandoId) {
-          return {
-            id: this.imovelEditandoId,
-            ...this.novoImovel,
-          };
-        }
+      const imovelAtual = this.imoveis.find((imovel) => imovel.id === this.imovelEditandoId);
 
-        return imovel;
-      });
-    } else {
-      const imovel = {
-        id: new Date().getTime(),
+      const imovelEditado = {
+        id: this.imovelEditandoId,
+        origem: imovelAtual?.origem === 'fixo' ? 'fixo-editado' : 'criado',
         ...this.novoImovel,
       };
 
-      novaLista = [...this.imoveis, imovel];
+      const jaExisteNoStorage = imoveisSalvos.some(
+        (imovel: any) => imovel.id === this.imovelEditandoId,
+      );
+
+      if (jaExisteNoStorage) {
+        novaListaSalva = imoveisSalvos.map((imovel: any) => {
+          if (imovel.id === this.imovelEditandoId) {
+            return imovelEditado;
+          }
+
+          return imovel;
+        });
+      } else {
+        novaListaSalva = [...imoveisSalvos, imovelEditado];
+      }
+    } else {
+      const imovel = {
+        id: new Date().getTime(),
+        origem: 'criado',
+        ...this.novoImovel,
+      };
+
+      novaListaSalva = [...imoveisSalvos, imovel];
     }
 
-    const salvou = this.salvarNoLocalStorage(novaLista);
+    const salvou = this.salvarNoLocalStorage(novaListaSalva);
 
     if (!salvou) {
       this.mensagemErro =
@@ -237,14 +314,15 @@ export class AdminImoveis {
       return;
     }
 
-    this.imoveis = novaLista;
+    const estavaEditando = this.modoEdicao;
 
+    this.carregarImoveis();
     this.limparFormulario();
     this.mostrarFormulario = false;
     this.modoEdicao = false;
     this.imovelEditandoId = null;
 
-    this.mensagemSucesso = this.modoEdicao
+    this.mensagemSucesso = estavaEditando
       ? 'Imóvel atualizado com sucesso!'
       : 'Imóvel cadastrado com sucesso!';
   }
@@ -259,12 +337,36 @@ export class AdminImoveis {
   }
 
   removerImovel(id: number) {
-    const novaLista = this.imoveis.filter((imovel) => imovel.id !== id);
+    const imovel = this.imoveis.find((item) => item.id === id);
+
+    if (!imovel) {
+      return;
+    }
+
+    const mensagem =
+      imovel.origem === 'fixo' || imovel.origem === 'fixo-editado'
+        ? 'Esse é um imóvel padrão. Deseja restaurar ele para o padrão original?'
+        : 'Tem certeza que deseja remover este imóvel?';
+
+    const confirmar = confirm(mensagem);
+
+    if (!confirmar) {
+      return;
+    }
+
+    const dados = localStorage.getItem('imoveis');
+    const imoveisSalvos = dados ? JSON.parse(dados) : [];
+
+    const novaLista = imoveisSalvos.filter((item: any) => item.id !== id);
 
     const salvou = this.salvarNoLocalStorage(novaLista);
 
     if (salvou) {
-      this.imoveis = novaLista;
+      this.carregarImoveis();
+      this.mensagemSucesso =
+        imovel.origem === 'fixo' || imovel.origem === 'fixo-editado'
+          ? 'Imóvel restaurado para o padrão original.'
+          : 'Imóvel removido com sucesso.';
     }
   }
 
@@ -286,5 +388,25 @@ export class AdminImoveis {
       style: 'currency',
       currency: 'BRL',
     }).format(valor || 0);
+  }
+
+  obterTextoOrigem(imovel: any) {
+    if (imovel.origem === 'fixo') {
+      return 'Imóvel padrão';
+    }
+
+    if (imovel.origem === 'fixo-editado') {
+      return 'Imóvel padrão editado';
+    }
+
+    return 'Imóvel cadastrado';
+  }
+
+  obterTextoBotaoRemover(imovel: any) {
+    if (imovel.origem === 'fixo' || imovel.origem === 'fixo-editado') {
+      return 'Restaurar padrão';
+    }
+
+    return 'Remover';
   }
 }

@@ -50,9 +50,14 @@ export class MinhasReservas {
     const dados = localStorage.getItem('reservas');
     const todasReservas = dados ? JSON.parse(dados) : [];
 
-    this.reservas = todasReservas.filter(
-      (reserva: any) => reserva.usuarioEmail === this.usuarioLogado.email,
-    );
+    this.reservas = todasReservas
+      .filter((reserva: any) => reserva.usuarioEmail === this.usuarioLogado.email)
+      .sort((a: any, b: any) => {
+        const dataA = a.dataCriacao ? new Date(a.dataCriacao).getTime() : 0;
+        const dataB = b.dataCriacao ? new Date(b.dataCriacao).getTime() : 0;
+
+        return dataB - dataA;
+      });
   }
 
   formatarData(data: string) {
@@ -94,6 +99,50 @@ export class MinhasReservas {
     const diff = d2.getTime() - d1.getTime();
 
     return diff / (1000 * 60 * 60 * 24);
+  }
+
+  calcularHospedes(reserva: any) {
+    return Number(reserva.adultos || 0) + Number(reserva.criancas || 0);
+  }
+
+  obterNomeResponsavel(reserva: any) {
+    return reserva.responsavelNome || reserva.usuarioNome || this.usuarioLogado.nome || 'Não informado';
+  }
+
+  obterEmailResponsavel(reserva: any) {
+    return reserva.responsavelEmail || reserva.usuarioEmail || this.usuarioLogado.email || 'Não informado';
+  }
+
+  obterPaisResponsavel(reserva: any) {
+    return reserva.responsavelPais || 'Não informado';
+  }
+
+  obterTipoDocumento(reserva: any) {
+    if (reserva.responsavelTipoDocumento === 'cpf') {
+      return 'CPF';
+    }
+
+    if (reserva.responsavelTipoDocumento === 'passaporte') {
+      return 'Passaporte';
+    }
+
+    if (reserva.responsavelTipoDocumento === 'outro') {
+      return 'Outro documento';
+    }
+
+    if (reserva.responsavelCpf) {
+      return 'CPF';
+    }
+
+    return 'Documento';
+  }
+
+  obterDocumento(reserva: any) {
+    return reserva.responsavelDocumento || reserva.responsavelCpf || 'Não informado';
+  }
+
+  obterTelefone(reserva: any) {
+    return reserva.responsavelTelefone || 'Não informado';
   }
 
   calcularDiasDesdeCriacao(dataCriacao: string) {
@@ -147,15 +196,37 @@ export class MinhasReservas {
     return `Você ainda tem ${diasRestantes} dia(s) para cancelar gratuitamente.`;
   }
 
+  obterMensagemStatus(reserva: any) {
+    if (reserva.status === 'pendente') {
+      return 'Sua solicitação foi registrada, mas a reserva ainda depende da confirmação do pagamento.';
+    }
+
+    if (reserva.status === 'pago') {
+      return 'Pagamento confirmado. Sua reserva está confirmada.';
+    }
+
+    if (reserva.status === 'cancelada') {
+      return 'Esta reserva foi cancelada.';
+    }
+
+    return 'Status da reserva não identificado.';
+  }
+
   finalizarPeloWhatsapp(reserva: any) {
+    const tipoDocumento = this.obterTipoDocumento(reserva);
+    const documento = this.obterDocumento(reserva);
+
     const mensagem = `Olá! Quero realizar o pagamento da minha reserva:
 
-Nome: ${this.usuarioLogado.nome}
-E-mail: ${this.usuarioLogado.email}
 Imóvel: ${reserva.titulo}
 Entrada: ${this.formatarData(reserva.dataEntrada)}
 Saída: ${this.formatarData(reserva.dataSaida)}
-Hóspedes: ${reserva.adultos + reserva.criancas}
+Hóspedes: ${this.calcularHospedes(reserva)}
+Responsável: ${this.obterNomeResponsavel(reserva)}
+E-mail: ${this.obterEmailResponsavel(reserva)}
+Telefone: ${this.obterTelefone(reserva)}
+País: ${this.obterPaisResponsavel(reserva)}
+Documento (${tipoDocumento}): ${documento}
 Total: ${this.formatarPreco(reserva.total)}`;
 
     const url = `https://wa.me/5511999999999?text=${encodeURIComponent(mensagem)}`;
@@ -167,6 +238,12 @@ Total: ${this.formatarPreco(reserva.total)}`;
     const reservaEncontrada = this.reservas.find((reserva) => reserva.id === reservaId);
 
     if (!reservaEncontrada || !this.podeCancelarReserva(reservaEncontrada)) {
+      return;
+    }
+
+    const confirmar = confirm('Tem certeza que deseja cancelar esta reserva?');
+
+    if (!confirmar) {
       return;
     }
 

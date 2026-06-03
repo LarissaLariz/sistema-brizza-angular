@@ -90,6 +90,7 @@
 .reserva-header p {
   margin: 8px 0 0;
   color: #64748b;
+  line-height: 1.4;
 }
 
 .tag-recente {
@@ -127,16 +128,55 @@
   color: #991b1b;
 }
 
-.reserva-info {
+.reserva-info,
+.responsavel-info {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-bottom: 18px;
 }
 
-.reserva-info p {
-  margin: 0;
-  color: #334155;
+.reserva-info div,
+.responsavel-info div {
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.reserva-info span,
+.responsavel-info span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.reserva-info strong,
+.responsavel-info strong {
+  color: #111827;
+  font-size: 15px;
+  word-break: break-word;
+}
+
+.responsavel-card {
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.responsavel-card h3 {
+  margin: 0 0 14px;
+  color: #1e3a8a;
+}
+
+.responsavel-card .responsavel-info {
+  margin-bottom: 0;
+}
+
+.responsavel-card .responsavel-info div {
+  background: white;
 }
 
 .reserva-total {
@@ -211,4 +251,51 @@
   justify-content: center;
   padding: 0 14px;
   text-align: center;
+}
+
+.status-card {
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.pago-card {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.cancelada-card {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@media (max-width: 700px) {
+  .topo-reservas {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .topo-acoes {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .home-btn,
+  .sair-btn {
+    width: 100%;
+  }
+
+  .reserva-header {
+    flex-direction: column;
+  }
+
+  .reserva-info,
+  .responsavel-info {
+    grid-template-columns: 1fr;
+  }
+
+  .reserva-acoes {
+    grid-template-columns: 1fr;
+  }
 }

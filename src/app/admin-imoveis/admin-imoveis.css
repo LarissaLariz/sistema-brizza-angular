@@ -307,3 +307,13 @@
 .upload-input-escondido {
   display: none;
 }
+.tag-origem {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 800;
+}

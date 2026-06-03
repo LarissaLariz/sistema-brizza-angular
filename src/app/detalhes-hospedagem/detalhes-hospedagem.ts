@@ -29,6 +29,8 @@ export class DetalhesHospedagem {
   responsavelDocumento = '';
   responsavelTelefone = '';
 
+  hospedesAdicionais: any[] = [];
+
   mostrarModalImagem = false;
   mostrarModalAutenticacao = false;
 
@@ -141,6 +143,8 @@ export class DetalhesHospedagem {
       this.dataSaida = params['dataSaida'] || null;
       this.adultos = Number(params['adultos'] || 0);
       this.criancas = Number(params['criancas'] || 0);
+
+      this.gerarHospedesAdicionais();
 
       if (this.dataEntrada) {
         this.definirMesCalendarioPorData(this.dataEntrada);
@@ -330,6 +334,150 @@ export class DetalhesHospedagem {
 
       this.criancas = novo;
     }
+
+    this.gerarHospedesAdicionais();
+  }
+
+  gerarHospedesAdicionais() {
+    const hospedesAntigos = [...this.hospedesAdicionais];
+    const novosHospedes: any[] = [];
+
+    const adultosAdicionais = Math.max(this.adultos - 1, 0);
+
+    for (let i = 0; i < adultosAdicionais; i++) {
+      const antigo = hospedesAntigos.filter((hospede) => hospede.tipo === 'adulto')[i];
+
+      novosHospedes.push({
+        tipo: 'adulto',
+        nome: antigo?.nome || '',
+        cpf: antigo?.cpf || '',
+      });
+    }
+
+    for (let i = 0; i < this.criancas; i++) {
+      const antigo = hospedesAntigos.filter((hospede) => hospede.tipo === 'crianca')[i];
+
+      novosHospedes.push({
+        tipo: 'crianca',
+        nome: antigo?.nome || '',
+        idade: antigo?.idade ?? '',
+      });
+    }
+
+    this.hospedesAdicionais = novosHospedes;
+  }
+
+  formatarNomeHospedeInput(index: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const valorFormatado = this.formatarNomeValor(input.value);
+
+    this.hospedesAdicionais[index].nome = valorFormatado;
+    input.value = valorFormatado;
+    this.mensagemErroReserva = '';
+  }
+
+  formatarCpfHospedeInput(index: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const valorFormatado = this.formatarCpfValor(input.value);
+
+    this.hospedesAdicionais[index].cpf = valorFormatado;
+    input.value = valorFormatado;
+    this.mensagemErroReserva = '';
+  }
+
+  formatarIdadeCriancaInput(index: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const numeros = this.pegarSomenteNumeros(input.value).slice(0, 2);
+    const idade = Number(numeros);
+
+    if (!numeros) {
+      this.hospedesAdicionais[index].idade = '';
+      input.value = '';
+      return;
+    }
+
+    if (idade > 12) {
+      this.hospedesAdicionais[index].idade = '12';
+      input.value = '12';
+      return;
+    }
+
+    this.hospedesAdicionais[index].idade = numeros;
+    input.value = numeros;
+    this.mensagemErroReserva = '';
+  }
+
+  validarHospedesAdicionais() {
+    for (let i = 0; i < this.hospedesAdicionais.length; i++) {
+      const hospede = this.hospedesAdicionais[i];
+
+      if (!this.nomeValido(hospede.nome || '')) {
+        this.mensagemErroReserva = `Informe um nome válido para o hóspede adicional ${i + 1}.`;
+        return false;
+      }
+
+      if (hospede.tipo === 'adulto') {
+        if (!this.cpfValido(hospede.cpf || '')) {
+          this.mensagemErroReserva = `Informe um CPF válido para o adulto adicional ${i + 1}.`;
+          return false;
+        }
+      }
+
+      if (hospede.tipo === 'crianca') {
+        const idade = Number(hospede.idade);
+
+        if (hospede.idade === '' || Number.isNaN(idade) || idade < 0 || idade > 12) {
+          this.mensagemErroReserva = `Informe uma idade válida para a criança ${i + 1}.`;
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  get criancasPagantes() {
+    return this.hospedesAdicionais.filter((hospede) => {
+      if (hospede.tipo !== 'crianca') {
+        return false;
+      }
+
+      const idade = Number(hospede.idade);
+
+      return idade >= 6 && idade <= 12;
+    }).length;
+  }
+
+  get totalHospedesPagantes() {
+    return this.adultos + this.criancasPagantes;
+  }
+
+  get percentualAdicionalHospedes() {
+    const pagantes = this.totalHospedesPagantes;
+
+    if (pagantes <= 1) {
+      return 0;
+    }
+
+    if (pagantes === 2) {
+      return 0.1;
+    }
+
+    if (pagantes === 3) {
+      return 0.2;
+    }
+
+    return 0.2 + (pagantes - 3) * 0.15;
+  }
+
+  get valorNoiteCalculado() {
+    if (!this.hospedagemSelecionada) {
+      return 0;
+    }
+
+    const precoBase = Number(this.hospedagemSelecionada.preco || 0);
+
+    return precoBase + precoBase * this.percentualAdicionalHospedes;
   }
 
   abrirImagem(img: string) {
@@ -366,11 +514,7 @@ export class DetalhesHospedagem {
   }
 
   get valorTotalReserva() {
-    if (!this.hospedagemSelecionada) {
-      return 0;
-    }
-
-    return this.quantidadeNoites * this.hospedagemSelecionada.preco;
+    return this.quantidadeNoites * this.valorNoiteCalculado;
   }
 
   pegarSomenteNumeros(valor: string) {
@@ -915,10 +1059,6 @@ export class DetalhesHospedagem {
       return 'Data indisponível';
     }
 
-    if (this.calendarioAberto === 'saida' && dia.bloqueada && !this.diaDesabilitado(dia)) {
-      return 'Permitido como data de saída';
-    }
-
     if (dia.motivoBloqueio) {
       return dia.motivoBloqueio;
     }
@@ -999,7 +1139,7 @@ export class DetalhesHospedagem {
   }
 
   montarMensagemPeriodoIndisponivel(bloqueio: any) {
-    return `Este período não está disponível. Escolha outras datas.`;
+    return 'Este período não está disponível. Escolha outras datas.';
   }
 
   verificarDisponibilidadeSelecionada() {
@@ -1039,6 +1179,11 @@ export class DetalhesHospedagem {
 
     if (saida <= entrada) {
       this.mensagemErroReserva = 'A data de saída deve ser depois da data de entrada.';
+      return;
+    }
+
+    if (this.adultos < 1) {
+      this.mensagemErroReserva = 'Informe pelo menos 1 adulto responsável pela reserva.';
       return;
     }
 
@@ -1136,6 +1281,10 @@ export class DetalhesHospedagem {
       return;
     }
 
+    if (!this.validarHospedesAdicionais()) {
+      return;
+    }
+
     const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
     const reservaId = new Date().getTime();
 
@@ -1153,6 +1302,14 @@ export class DetalhesHospedagem {
       responsavelCpf:
         this.responsavelTipoDocumento === 'cpf' ? this.responsavelDocumento.trim() : '',
       responsavelTelefone: this.responsavelTelefone.trim(),
+
+      hospedesAdicionais: this.hospedesAdicionais,
+
+      totalHospedesPagantes: this.totalHospedesPagantes,
+      criancasPagantes: this.criancasPagantes,
+      percentualAdicionalHospedes: this.percentualAdicionalHospedes,
+      valorNoiteBase: this.hospedagemSelecionada.preco,
+      valorNoiteCalculado: this.valorNoiteCalculado,
 
       imovelId: this.hospedagemSelecionada.id,
       titulo: this.hospedagemSelecionada.titulo,
@@ -1224,11 +1381,13 @@ Imóvel: ${reserva.titulo}
 Entrada: ${this.formatarData(reserva.dataEntrada)}
 Saída: ${this.formatarData(reserva.dataSaida)}
 Hóspedes: ${reserva.adultos + reserva.criancas}
+Hóspedes pagantes: ${reserva.totalHospedesPagantes || this.totalHospedesPagantes}
 Responsável: ${reserva.responsavelNome || reserva.usuarioNome}
 País: ${reserva.responsavelPais || 'Não informado'}
 Documento (${tipoDocumento}): ${documento}
 Telefone: ${reserva.responsavelTelefone || 'Não informado'}
 E-mail: ${reserva.responsavelEmail || reserva.usuarioEmail}
+Valor por noite: ${this.formatarPreco(reserva.valorNoiteCalculado || this.valorNoiteCalculado)}
 Total: ${this.formatarPreco(reserva.total)}`;
 
     const url = `https://wa.me/5511999999999?text=${encodeURIComponent(mensagem)}`;

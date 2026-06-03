@@ -964,3 +964,100 @@
 .calendario-dia-wrapper.tem-tooltip:hover .tooltip-calendario {
   opacity: 1;
 }
+.hospedes-area {
+  margin: 18px 0 16px;
+  padding: 16px;
+  border: 1px solid #dbe3f0;
+  border-radius: 18px;
+  background: #f8fbff;
+}
+
+.hospedes-area h3,
+.calculo-reserva-card h3 {
+  margin: 0 0 6px;
+  color: #111827;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.hospedes-area p {
+  margin: 0 0 14px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.hospedes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hospede-card {
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  padding: 14px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hospede-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hospede-titulo strong {
+  color: #111827;
+  font-size: 15px;
+}
+
+.hospede-titulo span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.calculo-reserva-card {
+  margin: 18px 0 16px;
+  padding: 16px;
+  border: 1px solid #bfdbfe;
+  border-radius: 18px;
+  background: #eff6ff;
+}
+
+.linha-calculo {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #dbeafe;
+}
+
+.linha-calculo:last-child {
+  border-bottom: none;
+}
+
+.linha-calculo span {
+  color: #475569;
+  font-size: 14px;
+}
+
+.linha-calculo strong {
+  color: #111827;
+  font-size: 14px;
+  text-align: right;
+}
+
+.linha-calculo.destaque {
+  margin-top: 6px;
+  padding-top: 14px;
+}
+
+.linha-calculo.destaque span,
+.linha-calculo.destaque strong {
+  color: #1d4ed8;
+  font-size: 16px;
+  font-weight: 800;
+}

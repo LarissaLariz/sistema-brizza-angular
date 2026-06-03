@@ -52,7 +52,7 @@
         <div class="reserva-box">
           <div class="reserva-preco">
             <strong>{{ formatarPreco(hospedagemSelecionada.preco) }}</strong>
-            <span>/ noite</span>
+            <span>/ noite base</span>
           </div>
 
           <div class="reserva-dados">
@@ -127,9 +127,6 @@
                       [class.bloqueado]="dia.bloqueada"
                       [class.selecionado]="dia.selecionada"
                       [class.intervalo]="dia.noIntervalo"
-                      [class.saida-limite]="
-                        calendarioAberto === 'saida' && dia.bloqueada && !diaDesabilitado(dia)
-                      "
                       [disabled]="diaDesabilitado(dia)"
                       (click)="selecionarDiaCalendario(dia)"
                     >
@@ -193,7 +190,7 @@
             <div class="reserva-contador">
               <div class="contador-texto">
                 <strong>Crianças</strong>
-                <span>De 2 a 12 anos</span>
+                <span>De 0 a 12 anos</span>
               </div>
 
               <div class="contador-acoes">
@@ -223,8 +220,7 @@
               <h3>Dados do responsável</h3>
 
               <p>
-                Informe os dados da pessoa responsável por esta reserva. Para hóspedes de fora do
-                Brasil, selecione outro país e use passaporte ou outro documento.
+                O responsável conta como o primeiro adulto da reserva.
               </p>
 
               <div class="responsavel-grid">
@@ -332,6 +328,106 @@
                 </div>
               </div>
             </div>
+
+            @if (hospedesAdicionais.length > 0) {
+              <div class="hospedes-area">
+                <h3>Dados dos outros hóspedes</h3>
+
+                <p>
+                  Informe os dados das pessoas que estarão com o responsável.
+                  Adultos precisam informar CPF. Crianças até 5 anos não pagam.
+                </p>
+
+                <div class="hospedes-lista">
+                  @for (hospede of hospedesAdicionais; track $index) {
+                    <div class="hospede-card">
+                      <div class="hospede-titulo">
+                        @if (hospede.tipo === 'adulto') {
+                          <strong>Adulto adicional {{ $index + 1 }}</strong>
+                          <span>Nome completo e CPF</span>
+                        }
+
+                        @if (hospede.tipo === 'crianca') {
+                          <strong>Criança {{ $index + 1 }}</strong>
+                          <span>Nome completo e idade</span>
+                        }
+                      </div>
+
+                      <div class="reserva-campo responsavel-campo">
+                        <label>Nome completo</label>
+
+                        <input
+                          type="text"
+                          [value]="hospede.nome"
+                          (input)="formatarNomeHospedeInput($index, $event)"
+                          placeholder="Ex: João Silva"
+                          maxlength="80"
+                          [disabled]="preReservaCriada"
+                        />
+                      </div>
+
+                      @if (hospede.tipo === 'adulto') {
+                        <div class="reserva-campo responsavel-campo">
+                          <label>CPF</label>
+
+                          <input
+                            type="text"
+                            [value]="hospede.cpf"
+                            (input)="formatarCpfHospedeInput($index, $event)"
+                            placeholder="000.000.000-00"
+                            maxlength="14"
+                            inputmode="numeric"
+                            [disabled]="preReservaCriada"
+                          />
+                        </div>
+                      }
+
+                      @if (hospede.tipo === 'crianca') {
+                        <div class="reserva-campo responsavel-campo">
+                          <label>Idade</label>
+
+                          <input
+                            type="text"
+                            [value]="hospede.idade"
+                            (input)="formatarIdadeCriancaInput($index, $event)"
+                            placeholder="Ex: 4"
+                            maxlength="2"
+                            inputmode="numeric"
+                            [disabled]="preReservaCriada"
+                          />
+                        </div>
+
+                      
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="calculo-reserva-card">
+              <h3>Resumo do valor</h3>
+
+              <div class="linha-calculo">
+                <span>Valor base por noite</span>
+                <strong>{{ formatarPreco(hospedagemSelecionada.preco) }}</strong>
+              </div>
+
+              <div class="linha-calculo">
+                <span>Hóspedes pagantes</span>
+                <strong>{{ totalHospedesPagantes }}</strong>
+              </div>
+
+              <div class="linha-calculo">
+                <span>Adicional por ocupação</span>
+                <strong>{{ percentualAdicionalHospedes * 100 }}%</strong>
+              </div>
+
+              <div class="linha-calculo destaque">
+                <span>Valor calculado por noite</span>
+                <strong>{{ formatarPreco(valorNoiteCalculado) }}</strong>
+              </div>
+            </div>
           }
 
           @if (!usuarioEstaLogado && !preReservaCriada) {
@@ -339,15 +435,14 @@
               <strong>Dados do responsável</strong>
 
               <p>
-                Para informar documento e telefone, entre na sua conta ou crie um cadastro rápido ao
-                solicitar a reserva.
+                Para informar documento, telefone e dados dos hóspedes, entre na sua conta ou crie um cadastro rápido.
               </p>
             </div>
           }
 
           <div class="reserva-total" *ngIf="quantidadeNoites > 0">
             <span>
-              {{ formatarPreco(hospedagemSelecionada.preco) }} x {{ quantidadeNoites }} noite(s)
+              {{ formatarPreco(valorNoiteCalculado) }} x {{ quantidadeNoites }} noite(s)
             </span>
 
             <strong>{{ formatarPreco(valorTotalReserva) }}</strong>
@@ -396,20 +491,18 @@
 
             <p>
               Para solicitar sua reserva, entre na sua conta ou crie um cadastro rápido.
-              Depois disso, você informará os dados do responsável pela reserva.
+              Depois disso, você informará os dados do responsável e dos hóspedes.
             </p>
           </div>
 
           <div class="modal-resumo">
             <strong>{{ hospedagemSelecionada.titulo }}</strong>
 
-            <span> Entrada: {{ formatarData(dataEntrada || '') }} </span>
-
-            <span> Saída: {{ formatarData(dataSaida || '') }} </span>
-
-            <span> Hóspedes: {{ adultos + criancas }} </span>
-
-            <span> Total: {{ formatarPreco(valorTotalReserva) }} </span>
+            <span>Entrada: {{ formatarData(dataEntrada || '') }}</span>
+            <span>Saída: {{ formatarData(dataSaida || '') }}</span>
+            <span>Hóspedes: {{ adultos + criancas }}</span>
+            <span>Pagantes: {{ totalHospedesPagantes }}</span>
+            <span>Total: {{ formatarPreco(valorTotalReserva) }}</span>
           </div>
 
           <div class="modal-actions">

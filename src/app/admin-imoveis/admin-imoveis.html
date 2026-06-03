@@ -145,6 +145,8 @@
         }
 
         <div class="imovel-info">
+          <span class="tag-origem">{{ obterTextoOrigem(imovel) }}</span>
+
           <h3>{{ imovel.titulo }}</h3>
 
           <p>{{ imovel.local }}</p>
@@ -167,7 +169,7 @@
             <button type="button" class="editar-btn" (click)="editarImovel(imovel)">Editar</button>
 
             <button type="button" class="remover-btn" (click)="removerImovel(imovel.id)">
-              Remover
+              {{ obterTextoBotaoRemover(imovel) }}
             </button>
           </div>
         </div>

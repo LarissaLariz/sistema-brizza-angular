@@ -33,20 +33,10 @@
           <h2>{{ reserva.titulo }}</h2>
 
           @if (reserva.id === reservaDestacadaId) {
-            <span class="tag-recente"> Solicitação mais recente </span>
+            <span class="tag-recente">Solicitação mais recente</span>
           }
 
-          @if (reserva.status === 'pendente') {
-            <p>Pagamento pendente</p>
-          }
-
-          @if (reserva.status === 'pago') {
-            <p>Reserva paga</p>
-          }
-
-          @if (reserva.status === 'cancelada') {
-            <p>Reserva cancelada</p>
-          }
+          <p>{{ obterMensagemStatus(reserva) }}</p>
         </div>
 
         <span
@@ -60,26 +50,59 @@
       </div>
 
       <div class="reserva-info">
-        <p>
-          <strong>Entrada:</strong>
-          {{ formatarData(reserva.dataEntrada) }}
-        </p>
+        <div>
+          <span>Entrada</span>
+          <strong>{{ formatarData(reserva.dataEntrada) }}</strong>
+        </div>
 
-        <p>
-          <strong>Saída:</strong>
-          {{ formatarData(reserva.dataSaida) }}
-        </p>
+        <div>
+          <span>Saída</span>
+          <strong>{{ formatarData(reserva.dataSaida) }}</strong>
+        </div>
 
-        <p>
-          <strong>Hóspedes:</strong>
-          {{ reserva.adultos + reserva.criancas }}
-        </p>
+        <div>
+          <span>Hóspedes</span>
+          <strong>{{ calcularHospedes(reserva) }} pessoa(s)</strong>
+        </div>
 
-        <p>
-          <strong>Período:</strong>
-          {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) }}
-          {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) === 1 ? 'noite' : 'noites' }}
-        </p>
+        <div>
+          <span>Período</span>
+          <strong>
+            {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) }}
+            {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) === 1 ? 'noite' : 'noites' }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="responsavel-card">
+        <h3>Dados do responsável</h3>
+
+        <div class="responsavel-info">
+          <div>
+            <span>Nome</span>
+            <strong>{{ obterNomeResponsavel(reserva) }}</strong>
+          </div>
+
+          <div>
+            <span>E-mail</span>
+            <strong>{{ obterEmailResponsavel(reserva) }}</strong>
+          </div>
+
+          <div>
+            <span>Telefone</span>
+            <strong>{{ obterTelefone(reserva) }}</strong>
+          </div>
+
+          <div>
+            <span>País</span>
+            <strong>{{ obterPaisResponsavel(reserva) }}</strong>
+          </div>
+
+          <div>
+            <span>{{ obterTipoDocumento(reserva) }}</span>
+            <strong>{{ obterDocumento(reserva) }}</strong>
+          </div>
+        </div>
       </div>
 
       <div class="reserva-total">
@@ -108,6 +131,18 @@
           } @else {
             <div class="cancelamento-bloqueado">Cancelamento gratuito indisponível</div>
           }
+        </div>
+      }
+
+      @if (reserva.status === 'pago') {
+        <div class="status-card pago-card">
+          Reserva confirmada. Em caso de dúvidas, entre em contato com a hospedagem.
+        </div>
+      }
+
+      @if (reserva.status === 'cancelada') {
+        <div class="status-card cancelada-card">
+          Esta reserva foi cancelada e não está mais ativa.
         </div>
       }
     </div>
