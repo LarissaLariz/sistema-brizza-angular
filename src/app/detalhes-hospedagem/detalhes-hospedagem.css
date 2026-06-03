@@ -937,7 +937,8 @@
     opacity: 1;
     transform: translateY(0);
   }
-}.calendario-dia-wrapper {
+}
+.calendario-dia-wrapper {
   position: relative;
 }
 
@@ -1060,4 +1061,38 @@
   color: #1d4ed8;
   font-size: 16px;
   font-weight: 800;
+}
+.linha-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.linha-total span {
+  color: #475569;
+}
+
+.linha-total strong {
+  color: #111827;
+}
+
+.linha-total-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-top: 14px;
+  padding-top: 14px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.linha-total-total span {
+  font-weight: 700;
+}
+
+.linha-total-total strong {
+  font-size: 22px;
+  color: #2563eb;
 }

@@ -27,8 +27,11 @@ export class Home {
   dataEntrada: string | null = null;
   dataSaida: string | null = null;
 
-  diasAbril = Array.from({ length: 30 }, (_, i) => i + 1);
-  diasMaio = Array.from({ length: 31 }, (_, i) => i + 1);
+  hoje = new Date();
+
+  mesAtualCalendario = this.criarMesCalendario(this.hoje.getFullYear(), this.hoje.getMonth());
+
+  proximoMesCalendario = this.criarMesCalendario(this.hoje.getFullYear(), this.hoje.getMonth() + 1);
 
   lugares = ['Pitangueiras', 'Enseada', 'Astúrias', 'Tombo', 'Guaiúba', 'Centro'];
 
@@ -82,19 +85,62 @@ export class Home {
     try {
       const imoveisAdmin = JSON.parse(dados);
 
-      const imoveisFormatados = imoveisAdmin.map((imovel: any) => {
-        return {
-          ...imovel,
-          imagem: imovel.imagens?.[0] || '',
-        };
+      const mapa = new Map<number, any>();
+
+      this.hospedagens.forEach((imovel) => {
+        mapa.set(imovel.id, imovel);
       });
 
-      this.hospedagens = [...this.hospedagens, ...imoveisFormatados];
+      imoveisAdmin.forEach((imovel: any) => {
+        mapa.set(imovel.id, {
+          ...imovel,
+          imagem: imovel.imagens?.[0] || '',
+        });
+      });
+
+      this.hospedagens = Array.from(mapa.values());
 
       this.hospedagensFiltradas = [...this.hospedagens];
     } catch {
       this.hospedagensFiltradas = [...this.hospedagens];
     }
+  }
+
+  criarMesCalendario(ano: number, mes: number) {
+    const primeiroDiaDoMes = new Date(ano, mes, 1);
+    const ultimoDiaDoMes = new Date(ano, mes + 1, 0);
+
+    const nomeMes = primeiroDiaDoMes.toLocaleDateString('pt-BR', {
+      month: 'long',
+      year: 'numeric',
+    });
+
+    const espacosAntes = primeiroDiaDoMes.getDay();
+    const quantidadeDias = ultimoDiaDoMes.getDate();
+
+    const dias = Array.from({ length: quantidadeDias }, (_, indice) => {
+      const dia = indice + 1;
+      const data = new Date(ano, mes, dia);
+
+      return {
+        dia,
+        dataCompleta: this.formatarDataParaInput(data),
+      };
+    });
+
+    return {
+      nomeMes,
+      espacosAntes: Array.from({ length: espacosAntes }),
+      dias,
+    };
+  }
+
+  formatarDataParaInput(data: Date) {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+
+    return `${ano}-${mes}-${dia}`;
   }
 
   get lugaresFiltrados() {
@@ -194,15 +240,28 @@ export class Home {
   }
 
   selecionarData(data: string) {
+    if (this.dataEstaNoPassado(data)) {
+      return;
+    }
+
     if (!this.dataEntrada || this.dataSaida) {
       this.dataEntrada = data;
       this.dataSaida = null;
       return;
     }
 
+    if (data < this.dataEntrada) {
+      this.dataEntrada = data;
+      this.dataSaida = null;
+      return;
+    }
+
+    if (data === this.dataEntrada) {
+      return;
+    }
+
     this.dataSaida = data;
   }
-
   alterarQuantidade(tipo: 'adultos' | 'criancas', valor: number) {
     const total = this.adultos + this.criancas;
 
@@ -260,5 +319,41 @@ export class Home {
     localStorage.removeItem('usuarioLogado');
     this.usuarioLogado = null;
     this.router.navigate(['/home']);
+  }
+  atualizarCalendario() {
+    this.mesAtualCalendario = this.criarMesCalendario(
+      this.hoje.getFullYear(),
+      this.hoje.getMonth(),
+    );
+
+    this.proximoMesCalendario = this.criarMesCalendario(
+      this.hoje.getFullYear(),
+      this.hoje.getMonth() + 1,
+    );
+  }
+
+  avancarMesCalendario() {
+    this.hoje = new Date(this.hoje.getFullYear(), this.hoje.getMonth() + 1, 1);
+    this.atualizarCalendario();
+  }
+
+  voltarMesCalendario() {
+    this.hoje = new Date(this.hoje.getFullYear(), this.hoje.getMonth() - 1, 1);
+    this.atualizarCalendario();
+  }
+  dataEstaNoPassado(data: string) {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const dataComparada = new Date(data + 'T00:00:00');
+
+    return dataComparada < hoje;
+  }
+  dataEstaNoIntervalo(data: string) {
+    if (!this.dataEntrada || !this.dataSaida) {
+      return false;
+    }
+
+    return data > this.dataEntrada && data < this.dataSaida;
   }
 }

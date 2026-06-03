@@ -219,9 +219,7 @@
             <div class="responsavel-area">
               <h3>Dados do responsável</h3>
 
-              <p>
-                O responsável conta como o primeiro adulto da reserva.
-              </p>
+              <p>O responsável conta como o primeiro adulto da reserva.</p>
 
               <div class="responsavel-grid">
                 <div class="reserva-campo responsavel-campo">
@@ -334,8 +332,8 @@
                 <h3>Dados dos outros hóspedes</h3>
 
                 <p>
-                  Informe os dados das pessoas que estarão com o responsável.
-                  Adultos precisam informar CPF. Crianças até 5 anos não pagam.
+                  Informe os dados das pessoas que estarão com o responsável. Adultos precisam
+                  informar CPF. Crianças até 5 anos não pagam.
                 </p>
 
                 <div class="hospedes-lista">
@@ -396,8 +394,6 @@
                             [disabled]="preReservaCriada"
                           />
                         </div>
-
-                      
                       }
                     </div>
                   }
@@ -435,17 +431,39 @@
               <strong>Dados do responsável</strong>
 
               <p>
-                Para informar documento, telefone e dados dos hóspedes, entre na sua conta ou crie um cadastro rápido.
+                Para informar documento, telefone e dados dos hóspedes, entre na sua conta ou crie
+                um cadastro rápido.
               </p>
             </div>
           }
 
           <div class="reserva-total" *ngIf="quantidadeNoites > 0">
-            <span>
-              {{ formatarPreco(valorNoiteCalculado) }} x {{ quantidadeNoites }} noite(s)
-            </span>
+            <div class="linha-total">
+              <span>
+                {{ formatarPreco(valorNoiteCalculado) }}
+                x
+                {{ quantidadeNoites }}
+                noite(s)
+              </span>
 
-            <strong>{{ formatarPreco(valorTotalReserva) }}</strong>
+              <strong>{{ formatarPreco(subtotalDiarias) }}</strong>
+            </div>
+
+            <div class="linha-total" *ngIf="taxaLimpezaReserva > 0">
+              <span>Taxa de limpeza</span>
+
+              <strong>
+                {{ formatarPreco(taxaLimpezaReserva) }}
+              </strong>
+            </div>
+
+            <div class="linha-total-total">
+              <span>Total da reserva</span>
+
+              <strong>
+                {{ formatarPreco(valorTotalReserva) }}
+              </strong>
+            </div>
           </div>
 
           @if (!preReservaCriada) {
@@ -490,8 +508,8 @@
             <h2>Entre para continuar</h2>
 
             <p>
-              Para solicitar sua reserva, entre na sua conta ou crie um cadastro rápido.
-              Depois disso, você informará os dados do responsável e dos hóspedes.
+              Para solicitar sua reserva, entre na sua conta ou crie um cadastro rápido. Depois
+              disso, você informará os dados do responsável e dos hóspedes.
             </p>
           </div>
 

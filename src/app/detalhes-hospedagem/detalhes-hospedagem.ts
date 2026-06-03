@@ -513,8 +513,16 @@ export class DetalhesHospedagem {
     return (saida.getTime() - entrada.getTime()) / (1000 * 60 * 60 * 24);
   }
 
-  get valorTotalReserva() {
+  get taxaLimpezaReserva() {
+    return Number(this.hospedagemSelecionada?.taxaLimpeza || 0);
+  }
+
+  get subtotalDiarias() {
     return this.quantidadeNoites * this.valorNoiteCalculado;
+  }
+
+  get valorTotalReserva() {
+    return this.subtotalDiarias + this.taxaLimpezaReserva;
   }
 
   pegarSomenteNumeros(valor: string) {
@@ -863,7 +871,7 @@ export class DetalhesHospedagem {
 
     for (let dia = 1; dia <= totalDiasMes; dia++) {
       const dataAtual = this.formatarDataInput(
-        new Date(this.anoCalendario, this.mesCalendario, dia)
+        new Date(this.anoCalendario, this.mesCalendario, dia),
       );
 
       const bloqueio = this.obterBloqueioDaData(dataAtual);
@@ -946,12 +954,7 @@ export class DetalhesHospedagem {
 
       const reservaBloqueia = status === 'pendente' || status === 'pago';
 
-      if (
-        !mesmaHospedagem ||
-        !reservaBloqueia ||
-        !reserva.dataEntrada ||
-        !reserva.dataSaida
-      ) {
+      if (!mesmaHospedagem || !reservaBloqueia || !reserva.dataEntrada || !reserva.dataSaida) {
         return false;
       }
 
@@ -970,8 +973,7 @@ export class DetalhesHospedagem {
     const bloqueios = this.buscarBloqueiosManuaisSalvos();
 
     const bloqueioEncontrado = bloqueios.find((bloqueio: any) => {
-      const mesmaHospedagem =
-        String(bloqueio.imovelId) === String(this.hospedagemSelecionada.id);
+      const mesmaHospedagem = String(bloqueio.imovelId) === String(this.hospedagemSelecionada.id);
 
       if (!mesmaHospedagem || !bloqueio.dataEntrada || !bloqueio.dataSaida) {
         return false;
@@ -994,7 +996,7 @@ export class DetalhesHospedagem {
 
   montarMotivoBloqueio(bloqueio: any) {
     return `Indisponível de ${this.formatarData(
-      bloqueio.dataEntrada
+      bloqueio.dataEntrada,
     )} até ${this.formatarData(bloqueio.dataSaida)}`;
   }
 
@@ -1086,8 +1088,7 @@ export class DetalhesHospedagem {
 
       if (
         saidaAtual &&
-        (saidaAtual <= dataSelecionada ||
-          this.buscarBloqueioNoPeriodo(dataSelecionada, saidaAtual))
+        (saidaAtual <= dataSelecionada || this.buscarBloqueioNoPeriodo(dataSelecionada, saidaAtual))
       ) {
         this.dataSaida = null;
       }
@@ -1112,14 +1113,10 @@ export class DetalhesHospedagem {
         return;
       }
 
-      const bloqueioNoPeriodo = this.buscarBloqueioNoPeriodo(
-        entradaAtual,
-        dataSelecionada
-      );
+      const bloqueioNoPeriodo = this.buscarBloqueioNoPeriodo(entradaAtual, dataSelecionada);
 
       if (bloqueioNoPeriodo) {
-        this.mensagemErroReserva =
-          this.montarMensagemPeriodoIndisponivel(bloqueioNoPeriodo);
+        this.mensagemErroReserva = this.montarMensagemPeriodoIndisponivel(bloqueioNoPeriodo);
         return;
       }
 
@@ -1150,8 +1147,7 @@ export class DetalhesHospedagem {
     const bloqueioNoPeriodo = this.buscarPeriodoIndisponivel();
 
     if (bloqueioNoPeriodo) {
-      this.mensagemErroReserva =
-        this.montarMensagemPeriodoIndisponivel(bloqueioNoPeriodo);
+      this.mensagemErroReserva = this.montarMensagemPeriodoIndisponivel(bloqueioNoPeriodo);
     }
   }
 
@@ -1195,8 +1191,7 @@ export class DetalhesHospedagem {
     const periodoIndisponivel = this.buscarPeriodoIndisponivel();
 
     if (periodoIndisponivel) {
-      this.mensagemErroReserva =
-        this.montarMensagemPeriodoIndisponivel(periodoIndisponivel);
+      this.mensagemErroReserva = this.montarMensagemPeriodoIndisponivel(periodoIndisponivel);
       return;
     }
 
@@ -1224,8 +1219,7 @@ export class DetalhesHospedagem {
     }
 
     if (!this.nomeValido(this.responsavelNome)) {
-      this.mensagemErroReserva =
-        'Informe um nome válido. Use apenas letras, espaços e acentos.';
+      this.mensagemErroReserva = 'Informe um nome válido. Use apenas letras, espaços e acentos.';
       return;
     }
 
@@ -1311,6 +1305,9 @@ export class DetalhesHospedagem {
       valorNoiteBase: this.hospedagemSelecionada.preco,
       valorNoiteCalculado: this.valorNoiteCalculado,
 
+      subtotalDiarias: this.subtotalDiarias,
+      taxaLimpeza: this.taxaLimpezaReserva,
+
       imovelId: this.hospedagemSelecionada.id,
       titulo: this.hospedagemSelecionada.titulo,
       dataEntrada: this.dataEntrada,
@@ -1368,12 +1365,9 @@ export class DetalhesHospedagem {
 
     if (!reserva) return;
 
-    const tipoDocumento = this.obterNomeTipoDocumento(
-      reserva.responsavelTipoDocumento || 'outro'
-    );
+    const tipoDocumento = this.obterNomeTipoDocumento(reserva.responsavelTipoDocumento || 'outro');
 
-    const documento =
-      reserva.responsavelDocumento || reserva.responsavelCpf || 'Não informado';
+    const documento = reserva.responsavelDocumento || reserva.responsavelCpf || 'Não informado';
 
     const mensagem = `Olá! Quero realizar o pagamento da minha reserva:
 

@@ -11,7 +11,7 @@
   </div>
 
   @if (mostrarFormulario) {
-    <section class="form-card">
+    <section class="form-card" id="formulario-imovel">
       <div class="form-header">
         <h2>
           @if (modoEdicao) {
@@ -41,19 +41,58 @@
       <label>Descrição</label>
       <textarea [(ngModel)]="novoImovel.descricao"></textarea>
 
-      <label>Preço por noite</label>
-      <input type="number" [(ngModel)]="novoImovel.preco" />
+      <div class="valores-grid">
+        <div>
+          <label>Preço por noite</label>
+          <input
+            type="text"
+            [value]="formatarMoeda(novoImovel.preco)"
+            (input)="formatarPrecoInput($event)"
+            placeholder="R$ 0,00"
+          />
+        </div>
 
-      <p class="preco-formatado">{{ formatarPreco(novoImovel.preco) }} por noite</p>
+        <div>
+          <label>Taxa de limpeza</label>
+          <input
+            type="text"
+            [value]="formatarMoeda(novoImovel.taxaLimpeza)"
+            (input)="formatarTaxaLimpezaInput($event)"
+            placeholder="R$ 0,00"
+          />
+        </div>
+      </div>
+
+      <div class="horarios-grid">
+        <div class="campo-horario" (click)="abrirSeletorHorario(checkinInput)">
+          <label>Horário de check-in</label>
+          <input
+            #checkinInput
+            type="time"
+            [(ngModel)]="novoImovel.checkin"
+            (click)="abrirSeletorHorario(checkinInput); $event.stopPropagation()"
+          />
+        </div>
+
+        <div class="campo-horario" (click)="abrirSeletorHorario(checkoutInput)">
+          <label>Horário de check-out</label>
+          <input
+            #checkoutInput
+            type="time"
+            [(ngModel)]="novoImovel.checkout"
+            (click)="abrirSeletorHorario(checkoutInput); $event.stopPropagation()"
+          />
+        </div>
+      </div>
 
       <div class="contadores-grid">
         <div>
           <label>Quantidade de hóspedes</label>
 
           <div class="contador-box">
-            <button type="button" (click)="diminuirCampo('hospedes')">-</button>
+            <button type="button" (click)="removerQuantidade('hospedes')">-</button>
             <span>{{ novoImovel.hospedes }}</span>
-            <button type="button" (click)="aumentarCampo('hospedes')">+</button>
+            <button type="button" (click)="adicionarQuantidade('hospedes')">+</button>
           </div>
         </div>
 
@@ -61,16 +100,16 @@
           <label>Quantidade de quartos</label>
 
           <div class="contador-box">
-            <button type="button" (click)="diminuirCampo('quartos')">-</button>
+            <button type="button" (click)="removerQuantidade('quartos')">-</button>
             <span>{{ novoImovel.quartos }}</span>
-            <button type="button" (click)="aumentarCampo('quartos')">+</button>
+            <button type="button" (click)="adicionarQuantidade('quartos')">+</button>
           </div>
         </div>
       </div>
 
       <label>Fotos do imóvel</label>
 
-      <label class="upload-label" for="upload-imagens"> Escolher fotos do imóvel </label>
+      <label class="upload-label" for="upload-imagens">Escolher fotos do imóvel</label>
 
       <input
         id="upload-imagens"
@@ -154,6 +193,21 @@
           <p>{{ imovel.descricao }}</p>
 
           <p class="preco-lista">{{ formatarPreco(imovel.preco) }} / noite</p>
+
+          <p>
+            <strong>Taxa de limpeza:</strong>
+            {{ formatarPreco(imovel.taxaLimpeza || 0) }}
+          </p>
+
+          <p>
+            <strong>Check-in:</strong>
+            {{ imovel.checkin || '14:00' }}
+          </p>
+
+          <p>
+            <strong>Check-out:</strong>
+            {{ imovel.checkout || '11:00' }}
+          </p>
 
           <p>{{ imovel.hospedes }} hóspedes · {{ imovel.quartos }} quarto(s)</p>
 

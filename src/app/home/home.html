@@ -67,13 +67,40 @@
     </div>
 
     <div class="calendar-dropdown" *ngIf="mostrarCalendario">
-      <div class="calendar-tabs">
-        <button class="calendar-tab active" type="button">Datas</button>
+      <div class="calendar-header">
+        <div class="calendar-title-row">
+          <button
+            type="button"
+            class="calendar-nav-btn"
+            (click)="voltarMesCalendario(); $event.stopPropagation()"
+          >
+            ‹
+          </button>
+
+          <h2>Selecione entrada e saída</h2>
+
+          <button
+            type="button"
+            class="calendar-nav-btn"
+            (click)="avancarMesCalendario(); $event.stopPropagation()"
+          >
+            ›
+          </button>
+        </div>
+        <p>
+          @if (dataEntrada && dataSaida) {
+            {{ formatarData(dataEntrada) }} até {{ formatarData(dataSaida) }}
+          } @else if (dataEntrada) {
+            Entrada: {{ formatarData(dataEntrada) }}
+          } @else {
+            Escolha primeiro a entrada e depois a saída
+          }
+        </p>
       </div>
 
       <div class="calendar-months">
         <div class="calendar-month">
-          <h3>abril de 2026</h3>
+          <h3>{{ mesAtualCalendario.nomeMes }}</h3>
 
           <div class="calendar-weekdays">
             <span>D</span>
@@ -86,26 +113,27 @@
           </div>
 
           <div class="calendar-days">
-            <span class="empty-day"></span>
-            <span class="empty-day"></span>
-            <span class="empty-day"></span>
+            <span class="empty-day" *ngFor="let vazio of mesAtualCalendario.espacosAntes"></span>
 
             <button
               class="calendar-day"
-              *ngFor="let dia of diasAbril"
+              *ngFor="let item of mesAtualCalendario.dias"
               type="button"
-              (click)="selecionarData('2026-04-' + dia)"
+              (click)="selecionarData(item.dataCompleta)"
+              [disabled]="dataEstaNoPassado(item.dataCompleta)"
+              [class.disabled-day]="dataEstaNoPassado(item.dataCompleta)"
+              [class.interval-day]="dataEstaNoIntervalo(item.dataCompleta)"
               [class.selected-day]="
-                '2026-04-' + dia === dataEntrada || '2026-04-' + dia === dataSaida
+                item.dataCompleta === dataEntrada || item.dataCompleta === dataSaida
               "
             >
-              {{ dia }}
+              {{ item.dia }}
             </button>
           </div>
         </div>
 
         <div class="calendar-month">
-          <h3>maio de 2026</h3>
+          <h3>{{ proximoMesCalendario.nomeMes }}</h3>
 
           <div class="calendar-weekdays">
             <span>D</span>
@@ -118,22 +146,18 @@
           </div>
 
           <div class="calendar-days">
-            <span class="empty-day"></span>
-            <span class="empty-day"></span>
-            <span class="empty-day"></span>
-            <span class="empty-day"></span>
-            <span class="empty-day"></span>
+            <span class="empty-day" *ngFor="let vazio of proximoMesCalendario.espacosAntes"></span>
 
             <button
               class="calendar-day"
-              *ngFor="let dia of diasMaio"
+              *ngFor="let item of proximoMesCalendario.dias"
               type="button"
-              (click)="selecionarData('2026-05-' + dia)"
+              (click)="selecionarData(item.dataCompleta)"
               [class.selected-day]="
-                '2026-05-' + dia === dataEntrada || '2026-05-' + dia === dataSaida
+                item.dataCompleta === dataEntrada || item.dataCompleta === dataSaida
               "
             >
-              {{ dia }}
+              {{ item.dia }}
             </button>
           </div>
         </div>
