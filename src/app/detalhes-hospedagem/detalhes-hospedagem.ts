@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Imoveis } from '../services/imoveis';
 
 @Component({
   selector: 'app-detalhes-hospedagem',
@@ -119,10 +120,11 @@ export class DetalhesHospedagem {
     },
   ];
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-  ) {
+constructor(
+  private route: ActivatedRoute,
+  private router: Router,
+  private imoveisService: Imoveis,
+) {
     this.dataHoje = this.gerarDataHoje();
 
     const hoje = new Date(`${this.dataHoje}T00:00:00`);
@@ -130,14 +132,11 @@ export class DetalhesHospedagem {
     this.mesCalendario = hoje.getMonth();
     this.anoCalendario = hoje.getFullYear();
 
-    this.carregarImoveisDoAdmin();
-
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
-    this.hospedagemSelecionada = this.hospedagens.find((hospedagem) => hospedagem.id === id);
+this.hospedagemSelecionada = this.hospedagens.find((hospedagem) => hospedagem.id === id) || null;
 
-    this.carregarDadosResponsavelDoUsuarioLogado();
-
+this.carregarImovelDaApi(id);
     this.route.queryParams.subscribe((params) => {
       this.dataEntrada = params['dataEntrada'] || null;
       this.dataSaida = params['dataSaida'] || null;
@@ -245,6 +244,40 @@ export class DetalhesHospedagem {
     } catch {
       return;
     }
+  }
+
+
+  carregarImovelDaApi(id: number) {
+    this.imoveisService.buscarImovelPorId(id).subscribe({
+      next: (imovel: any) => {
+        this.hospedagemSelecionada = {
+          id: Number(imovel.id),
+          titulo: imovel.nome,
+          local: imovel.cidade,
+          descricao: imovel.descricao,
+          imagens: [
+            '/images/imagem1.jpeg',
+            '/images/imagem2.jpeg',
+            '/images/imagem3.jpeg',
+          ],
+          preco: Number(imovel.preco_por_noite),
+          hospedes: Number(imovel.capacidade_maxima),
+          quartos: 1,
+          taxaLimpeza: 0,
+          comodidades: [
+            { icone: '📶', nome: 'Wi-Fi' },
+            { icone: '🍳', nome: 'Cozinha' },
+          ],
+        };
+
+        this.montarCalendario();
+        this.verificarDisponibilidadeSelecionada();
+      },
+      error: (erro) => {
+        console.error('Erro ao buscar imóvel da API:', erro);
+        this.hospedagemSelecionada = null;
+      },
+    });
   }
 
   formatarComodidades(comodidades: any[]) {
