@@ -1,3 +1,4 @@
+const reservasRoutes = require('./routes/reservas.routes');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -11,6 +12,7 @@ const imoveisRoutes = require('./routes/imoveis.routes');
 app.use(cors());
 app.use(express.json());
 app.use('/imoveis', imoveisRoutes);
+app.use('/reservas', reservasRoutes);
 
 app.get('/', async (req, res) => {
   try {
