@@ -66,9 +66,12 @@ export class DetalhesHospedagem {
     'Dezembro',
   ];
 
-  diasCalendario: any[] = [];
+diasCalendario: any[] = [];
 
-  hospedagens: any[] = [
+reservasImovel: any[] = [];
+
+hospedagens: any[] = [
+
     {
       id: 1,
       titulo: 'Golden Beach 158',
@@ -139,6 +142,7 @@ export class DetalhesHospedagem {
       this.hospedagens.find((hospedagem) => hospedagem.id === id) || null;
 
     this.carregarImovelDaApi(id);
+    this.carregarReservasDoImovel(id);
     this.carregarDadosResponsavelDoUsuarioLogado();
 
     this.route.queryParams.subscribe((params) => {
@@ -157,6 +161,20 @@ export class DetalhesHospedagem {
       this.verificarDisponibilidadeSelecionada();
     });
   }
+
+  carregarReservasDoImovel(id: number) {
+  this.imoveisService.listarReservasPorImovel(id).subscribe({
+    next: (reservas: any[]) => {
+      this.reservasImovel = reservas;
+      this.montarCalendario();
+      this.verificarDisponibilidadeSelecionada();
+    },
+    error: (erro) => {
+      console.error('Erro ao buscar reservas do imóvel:', erro);
+      this.reservasImovel = [];
+    },
+  });
+}
 
   carregarDadosResponsavelDoUsuarioLogado() {
     const usuarioLogado = localStorage.getItem('usuarioLogado');
@@ -878,6 +896,14 @@ export class DetalhesHospedagem {
     return `${ano}-${mes}-${dia}`;
   }
 
+  normalizarDataApi(data: string) {
+  if (!data) {
+    return '';
+  }
+
+  return data.slice(0, 10);
+}
+
   montarCalendario() {
     const primeiroDiaDoMes = new Date(this.anoCalendario, this.mesCalendario, 1);
     const ultimoDiaDoMes = new Date(this.anoCalendario, this.mesCalendario + 1, 0);
@@ -971,20 +997,23 @@ export class DetalhesHospedagem {
       return null;
     }
 
-    const reservas = this.buscarReservasSalvas();
+const reservas = this.reservasImovel;
 
     const reservaEncontrada = reservas.find((reserva: any) => {
-      const mesmaHospedagemPorId =
-        String(reserva.imovelId) === String(this.hospedagemSelecionada.id);
-
-      const mesmaHospedagemAntiga =
-        !reserva.imovelId && reserva.titulo === this.hospedagemSelecionada.titulo;
-
-      const mesmaHospedagem = mesmaHospedagemPorId || mesmaHospedagemAntiga;
+      const mesmaHospedagem = true;
 
       const status = reserva.status || 'pendente';
 
       const reservaBloqueia = status === 'pendente' || status === 'pago';
+
+const dataEntradaReserva = this.normalizarDataApi(reserva.data_entrada);
+const dataSaidaReserva = this.normalizarDataApi(reserva.data_saida);
+
+if (!mesmaHospedagem || !reservaBloqueia || !dataEntradaReserva || !dataSaidaReserva) {
+  return false;
+}
+
+return this.dataDentroDoPeriodo(data, dataEntradaReserva, dataSaidaReserva);
 
       if (!mesmaHospedagem || !reservaBloqueia || !reserva.dataEntrada || !reserva.dataSaida) {
         return false;
@@ -995,11 +1024,11 @@ export class DetalhesHospedagem {
 
     if (reservaEncontrada) {
       return {
-        tipo: 'reserva',
-        status: reservaEncontrada.status || 'pendente',
-        dataEntrada: reservaEncontrada.dataEntrada,
-        dataSaida: reservaEncontrada.dataSaida,
-      };
+  tipo: 'reserva',
+  status: reservaEncontrada.status || 'pendente',
+  dataEntrada: this.normalizarDataApi(reservaEncontrada.data_entrada),
+dataSaida: this.normalizarDataApi(reservaEncontrada.data_saida),
+};
     }
 
     const bloqueios = this.buscarBloqueiosManuaisSalvos();

@@ -19,6 +19,12 @@ export class Imoveis {
     return this.http.get<any>(`${this.imoveisUrl}/${id}`);
   }
 
+  listarReservasPorImovel(id: number): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.reservasUrl}/imovel/${id}`,
+    );
+  }
+
   criarReserva(reserva: any): Observable<any> {
     return this.http.post<any>(this.reservasUrl, reserva);
   }

@@ -18,6 +18,36 @@ async function listarReservas(req, res) {
   }
 }
 
+async function listarReservasPorImovel(req, res) {
+  try {
+    const { id } = req.params;
+
+    const resultado = await pool.query(
+      `
+      SELECT
+        id,
+        imovel_id,
+        data_entrada,
+        data_saida,
+        status
+      FROM reservas
+      WHERE imovel_id = $1
+        AND status IN ('pendente', 'pago')
+      ORDER BY data_entrada ASC
+      `,
+      [id],
+    );
+
+    res.json(resultado.rows);
+  } catch (erro) {
+    console.error(erro);
+
+    res.status(500).json({
+      erro: 'Erro ao buscar reservas do imóvel',
+    });
+  }
+}
+
 async function criarReserva(req, res) {
   try {
     const {
@@ -94,5 +124,6 @@ async function criarReserva(req, res) {
 
 module.exports = {
   listarReservas,
+  listarReservasPorImovel,
   criarReserva,
 };
