@@ -32,6 +32,25 @@ async function criarReserva(req, res) {
       total,
     } = req.body;
 
+    const reservaConflitante = await pool.query(
+      `
+      SELECT *
+      FROM reservas
+      WHERE imovel_id = $1
+        AND status IN ('pendente', 'pago')
+        AND $2 < data_saida
+        AND $3 > data_entrada
+      LIMIT 1
+      `,
+      [imovelId, dataEntrada, dataSaida],
+    );
+
+    if (reservaConflitante.rows.length > 0) {
+      return res.status(409).json({
+        erro: 'Já existe uma reserva para este imóvel nessas datas',
+      });
+    }
+
     const resultado = await pool.query(
       `
       INSERT INTO reservas (
@@ -43,9 +62,10 @@ async function criarReserva(req, res) {
         data_saida,
         adultos,
         criancas,
-        total
+        total,
+        status
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
       RETURNING *
       `,
       [
@@ -58,6 +78,7 @@ async function criarReserva(req, res) {
         adultos,
         criancas,
         total,
+        'pendente',
       ],
     );
 

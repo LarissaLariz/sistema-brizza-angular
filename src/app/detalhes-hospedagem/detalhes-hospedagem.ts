@@ -42,6 +42,7 @@ export class DetalhesHospedagem {
   mensagemErroReserva = '';
   preReservaCriada = false;
   ultimaReservaId: number | null = null;
+  ultimaReservaCriada: any = null;
 
   calendarioAberto: 'entrada' | 'saida' | null = null;
 
@@ -120,11 +121,11 @@ export class DetalhesHospedagem {
     },
   ];
 
-constructor(
-  private route: ActivatedRoute,
-  private router: Router,
-  private imoveisService: Imoveis,
-) {
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private imoveisService: Imoveis,
+  ) {
     this.dataHoje = this.gerarDataHoje();
 
     const hoje = new Date(`${this.dataHoje}T00:00:00`);
@@ -134,9 +135,12 @@ constructor(
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
-this.hospedagemSelecionada = this.hospedagens.find((hospedagem) => hospedagem.id === id) || null;
+    this.hospedagemSelecionada =
+      this.hospedagens.find((hospedagem) => hospedagem.id === id) || null;
 
-this.carregarImovelDaApi(id);
+    this.carregarImovelDaApi(id);
+    this.carregarDadosResponsavelDoUsuarioLogado();
+
     this.route.queryParams.subscribe((params) => {
       this.dataEntrada = params['dataEntrada'] || null;
       this.dataSaida = params['dataSaida'] || null;
@@ -246,7 +250,6 @@ this.carregarImovelDaApi(id);
     }
   }
 
-
   carregarImovelDaApi(id: number) {
     this.imoveisService.buscarImovelPorId(id).subscribe({
       next: (imovel: any) => {
@@ -255,11 +258,7 @@ this.carregarImovelDaApi(id);
           titulo: imovel.nome,
           local: imovel.cidade,
           descricao: imovel.descricao,
-          imagens: [
-            '/images/imagem1.jpeg',
-            '/images/imagem2.jpeg',
-            '/images/imagem3.jpeg',
-          ],
+          imagens: ['/images/imagem1.jpeg', '/images/imagem2.jpeg', '/images/imagem3.jpeg'],
           preco: Number(imovel.preco_por_noite),
           hospedes: Number(imovel.capacidade_maxima),
           quartos: 1,
@@ -1312,55 +1311,51 @@ this.carregarImovelDaApi(id);
       return;
     }
 
-    const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
-    const reservaId = new Date().getTime();
-
     const novaReserva = {
-      id: reservaId,
-
       usuarioEmail: usuario.email,
       usuarioNome: usuario.nome || 'Cliente sem nome',
-
-      responsavelNome: this.responsavelNome.trim(),
-      responsavelEmail: this.responsavelEmail.trim(),
-      responsavelPais: this.responsavelPais.trim(),
-      responsavelTipoDocumento: this.responsavelTipoDocumento,
-      responsavelDocumento: this.responsavelDocumento.trim(),
-      responsavelCpf:
-        this.responsavelTipoDocumento === 'cpf' ? this.responsavelDocumento.trim() : '',
-      responsavelTelefone: this.responsavelTelefone.trim(),
-
-      hospedesAdicionais: this.hospedesAdicionais,
-
-      totalHospedesPagantes: this.totalHospedesPagantes,
-      criancasPagantes: this.criancasPagantes,
-      percentualAdicionalHospedes: this.percentualAdicionalHospedes,
-      valorNoiteBase: this.hospedagemSelecionada.preco,
-      valorNoiteCalculado: this.valorNoiteCalculado,
-
-      subtotalDiarias: this.subtotalDiarias,
-      taxaLimpeza: this.taxaLimpezaReserva,
-
       imovelId: this.hospedagemSelecionada.id,
-      titulo: this.hospedagemSelecionada.titulo,
+      tituloImovel: this.hospedagemSelecionada.titulo,
       dataEntrada: this.dataEntrada,
       dataSaida: this.dataSaida,
       adultos: this.adultos,
       criancas: this.criancas,
       total: this.valorTotalReserva,
-      status: 'pendente',
-      dataCriacao: new Date().toISOString(),
     };
 
-    reservas.push(novaReserva);
-    localStorage.setItem('reservas', JSON.stringify(reservas));
+    this.imoveisService.criarReserva(novaReserva).subscribe({
+      next: (reserva: any) => {
+        this.ultimaReservaId = Number(reserva.id);
 
-    this.ultimaReservaId = reservaId;
-    this.preReservaCriada = true;
-    this.mensagemReserva =
-      'Solicitação registrada. Sua reserva ainda não está confirmada. Realize o pagamento para confirmar.';
+        this.ultimaReservaCriada = {
+          ...novaReserva,
+          id: Number(reserva.id),
+          status: reserva.status || 'pendente',
+          dataCriacao: reserva.criado_em || new Date().toISOString(),
+          titulo: novaReserva.tituloImovel,
+          totalHospedesPagantes: this.totalHospedesPagantes,
+          responsavelNome: this.responsavelNome,
+          responsavelEmail: this.responsavelEmail,
+          responsavelPais: this.responsavelPais,
+          responsavelTipoDocumento: this.responsavelTipoDocumento,
+          responsavelDocumento: this.responsavelDocumento,
+          responsavelTelefone: this.responsavelTelefone,
+          valorNoiteCalculado: this.valorNoiteCalculado,
+        };
 
-    this.montarCalendario();
+        this.preReservaCriada = true;
+
+        this.mensagemReserva =
+          'Solicitação registrada. Sua reserva ainda não está confirmada. Realize o pagamento para confirmar.';
+
+        this.montarCalendario();
+      },
+      error: (erro) => {
+        console.error('Erro ao salvar reserva:', erro);
+
+        this.mensagemErroReserva = 'Erro ao salvar reserva. Tente novamente.';
+      },
+    });
   }
 
   fecharModalAutenticacao() {
@@ -1392,19 +1387,17 @@ this.carregarImovelDaApi(id);
   }
 
   irParaPagamentoWhatsappUltima() {
-    const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
-
-    const reserva = reservas.find((item: any) => item.id === this.ultimaReservaId);
+    const reserva = this.ultimaReservaCriada;
 
     if (!reserva) return;
 
     const tipoDocumento = this.obterNomeTipoDocumento(reserva.responsavelTipoDocumento || 'outro');
 
-    const documento = reserva.responsavelDocumento || reserva.responsavelCpf || 'Não informado';
+    const documento = reserva.responsavelDocumento || 'Não informado';
 
     const mensagem = `Olá! Quero realizar o pagamento da minha reserva:
 
-Imóvel: ${reserva.titulo}
+Imóvel: ${reserva.titulo || reserva.tituloImovel}
 Entrada: ${this.formatarData(reserva.dataEntrada)}
 Saída: ${this.formatarData(reserva.dataSaida)}
 Hóspedes: ${reserva.adultos + reserva.criancas}
