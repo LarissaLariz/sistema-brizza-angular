@@ -1,4 +1,11 @@
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostListener,
+  ViewChild,
+} from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -12,8 +19,8 @@ import { Imoveis } from '../services/imoveis';
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home {
-  @ViewChild('lista', { static: false }) lista!: ElementRef;
+export class Home implements AfterViewInit {
+  @ViewChild('lista', { static: false }) lista!: ElementRef<HTMLDivElement>;
 
   usuarioLogado: any = null;
 
@@ -40,12 +47,15 @@ export class Home {
   lugares = ['Pitangueiras', 'Enseada', 'Astúrias', 'Tombo', 'Guaiúba', 'Centro'];
 
   hospedagens: any[] = [];
-
   hospedagensFiltradas: any[] = [];
+
+  carregandoImoveis = false;
+  erroCarregarImoveis = '';
 
   constructor(
     private router: Router,
     private imoveisService: Imoveis,
+    private cdr: ChangeDetectorRef,
   ) {
     const usuario = localStorage.getItem('usuarioLogado');
     this.usuarioLogado = usuario ? JSON.parse(usuario) : null;
@@ -53,27 +63,56 @@ export class Home {
     this.carregarImoveisDaApi();
   }
 
+  ngAfterViewInit() {
+    this.resetarScrollLista();
+  }
+
   carregarImoveisDaApi() {
+    this.carregandoImoveis = true;
+    this.erroCarregarImoveis = '';
+
     this.imoveisService.listarImoveis().subscribe({
-      next: (imoveisDoBanco) => {
-       this.hospedagens = imoveisDoBanco.map((imovel: any) => ({
-  id: Number(imovel.id),
-  titulo: imovel.nome,
-  local: imovel.cidade,
-  descricao: imovel.descricao,
-  imagem: '/images/imagem1.jpeg',
-  imagens: ['/images/imagem1.jpeg', '/images/imagem2.jpeg', '/images/imagem3.jpeg'],
-  preco: Number(imovel.preco_por_noite),
-  hospedes: Number(imovel.capacidade_maxima),
-  quartos: 1,
+      next: (imoveisDoBanco: any[]) => {
+        this.hospedagens = imoveisDoBanco.map((imovel: any) => ({
+          id: Number(imovel.id),
+          titulo: imovel.nome,
+          local: imovel.cidade,
+          descricao: imovel.descricao,
+          imagem: '/images/imagem1.jpeg',
+          imagens: ['/images/imagem1.jpeg', '/images/imagem2.jpeg', '/images/imagem3.jpeg'],
+          preco: Number(imovel.preco_por_noite),
+          hospedes: Number(imovel.capacidade_maxima),
+          quartos: 1,
         }));
 
         this.hospedagensFiltradas = [...this.hospedagens];
+        this.carregandoImoveis = false;
+
+        this.cdr.detectChanges();
+        this.resetarScrollLista();
       },
       error: (erro) => {
         console.error('Erro ao carregar imóveis da API:', erro);
+
+        this.hospedagens = [];
+        this.hospedagensFiltradas = [];
+        this.carregandoImoveis = false;
+        this.erroCarregarImoveis = 'Erro ao carregar imóveis. Tente novamente.';
+
+        this.cdr.detectChanges();
       },
     });
+  }
+
+  resetarScrollLista() {
+    setTimeout(() => {
+      if (this.lista?.nativeElement) {
+        this.lista.nativeElement.scrollTo({
+          left: 0,
+          behavior: 'auto',
+        });
+      }
+    }, 0);
   }
 
   criarMesCalendario(ano: number, mes: number) {
@@ -196,6 +235,9 @@ export class Home {
     this.criancas = 0;
 
     this.hospedagensFiltradas = [...this.hospedagens];
+
+    this.cdr.detectChanges();
+    this.resetarScrollLista();
   }
 
   abrirHospedes() {
@@ -257,21 +299,40 @@ export class Home {
   }
 
   buscar() {
-    this.hospedagensFiltradas = this.hospedagens.filter((item) =>
-      (item.local ?? '').toLowerCase().includes(this.localSelecionado.toLowerCase()),
-    );
+    const localBusca = this.localSelecionado.trim().toLowerCase();
+
+    if (!localBusca) {
+      this.hospedagensFiltradas = [...this.hospedagens];
+    } else {
+      this.hospedagensFiltradas = this.hospedagens.filter((item) =>
+        (item.local ?? '').toLowerCase().includes(localBusca),
+      );
+    }
 
     this.mostrarSugestoesLocal = false;
     this.mostrarCalendario = false;
     this.mostrarHospedes = false;
+
+    this.cdr.detectChanges();
+    this.resetarScrollLista();
   }
 
   scrollDireita() {
-    this.lista.nativeElement.scrollBy({ left: 300, behavior: 'smooth' });
+    if (!this.lista?.nativeElement) return;
+
+    this.lista.nativeElement.scrollBy({
+      left: 300,
+      behavior: 'smooth',
+    });
   }
 
   scrollEsquerda() {
-    this.lista.nativeElement.scrollBy({ left: -300, behavior: 'smooth' });
+    if (!this.lista?.nativeElement) return;
+
+    this.lista.nativeElement.scrollBy({
+      left: -300,
+      behavior: 'smooth',
+    });
   }
 
   irParaLogin() {
@@ -318,7 +379,7 @@ export class Home {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const dataComparada = new Date(data + 'T00:00:00');
+    const dataComparada = new Date(`${data}T00:00:00`);
 
     return dataComparada < hoje;
   }

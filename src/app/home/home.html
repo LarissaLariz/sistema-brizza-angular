@@ -87,6 +87,7 @@
             ›
           </button>
         </div>
+
         <p>
           @if (dataEntrada && dataSaida) {
             {{ formatarData(dataEntrada) }} até {{ formatarData(dataSaida) }}
@@ -146,13 +147,19 @@
           </div>
 
           <div class="calendar-days">
-            <span class="empty-day" *ngFor="let vazio of proximoMesCalendario.espacosAntes"></span>
+            <span
+              class="empty-day"
+              *ngFor="let vazio of proximoMesCalendario.espacosAntes"
+            ></span>
 
             <button
               class="calendar-day"
               *ngFor="let item of proximoMesCalendario.dias"
               type="button"
               (click)="selecionarData(item.dataCompleta)"
+              [disabled]="dataEstaNoPassado(item.dataCompleta)"
+              [class.disabled-day]="dataEstaNoPassado(item.dataCompleta)"
+              [class.interval-day]="dataEstaNoIntervalo(item.dataCompleta)"
               [class.selected-day]="
                 item.dataCompleta === dataEntrada || item.dataCompleta === dataSaida
               "
@@ -232,6 +239,21 @@
   <button class="seta esquerda" type="button" (click)="scrollEsquerda()">‹</button>
 
   <div class="lista-hospedagens" #lista>
+    <div class="estado-lista" *ngIf="carregandoImoveis">
+      Carregando imóveis...
+    </div>
+
+    <div class="estado-lista erro" *ngIf="!carregandoImoveis && erroCarregarImoveis">
+      {{ erroCarregarImoveis }}
+    </div>
+
+    <div
+      class="estado-lista"
+      *ngIf="!carregandoImoveis && !erroCarregarImoveis && hospedagensFiltradas.length === 0"
+    >
+      Nenhum imóvel encontrado.
+    </div>
+
     <app-hospedagem-card
       *ngFor="let item of hospedagensFiltradas"
       [titulo]="item.titulo"
