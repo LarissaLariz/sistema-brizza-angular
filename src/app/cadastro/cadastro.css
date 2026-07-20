@@ -7,6 +7,7 @@
   padding: 24px;
 }
 
+
 .cadastro-card {
   width: 380px;
   background: white;
@@ -18,12 +19,14 @@
   gap: 14px;
 }
 
+
 .cadastro-card h1 {
   font-size: 28px;
   font-weight: 700;
   margin: 0;
   text-align: center;
 }
+
 
 .cadastro-subtitulo {
   margin: 0 0 8px;
@@ -32,7 +35,73 @@
   font-size: 14px;
 }
 
-.cadastro-card input {
+
+/* BOTÃO GOOGLE */
+
+.google-btn {
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+
+.google-btn:hover {
+  background: #f8f8f8;
+}
+
+
+/* DIVISOR */
+
+.divisor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #999;
+  font-size: 13px;
+}
+
+
+.divisor::before,
+.divisor::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+
+
+
+/* CAMPOS */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+
+.campo label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+
+.campo label strong {
+  color: #dc2626;
+}
+
+
+.campo input {
   height: 48px;
   padding: 0 14px;
   border-radius: 10px;
@@ -41,9 +110,39 @@
   outline: none;
 }
 
-.cadastro-card input:focus {
+
+.campo input:focus {
   border-color: #00a8a8;
 }
+
+
+
+/* TERMOS */
+
+.termos {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+}
+
+
+.termos input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+
+.termos strong {
+  color: #dc2626;
+}
+
+
+
+/* ERRO */
 
 .erro-cadastro {
   padding: 10px;
@@ -55,6 +154,10 @@
   text-align: center;
 }
 
+
+
+/* BOTÕES */
+
 .criar-btn,
 .login-btn {
   height: 48px;
@@ -63,15 +166,18 @@
   cursor: pointer;
 }
 
+
 .criar-btn {
   border: none;
   background: #00a8a8;
   color: white;
 }
 
+
 .criar-btn:hover {
   background: #008c8c;
 }
+
 
 .login-texto {
   margin: 8px 0 0;
@@ -80,12 +186,20 @@
   color: #555;
 }
 
+
 .login-btn {
   border: 1px solid #00a8a8;
   background: white;
   color: #00a8a8;
 }
 
+
 .login-btn:hover {
   background: #e6ffff;
+}
+
+.google-btn img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }

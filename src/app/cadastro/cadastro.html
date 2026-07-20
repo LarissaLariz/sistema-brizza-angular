@@ -2,29 +2,112 @@
   <div class="cadastro-card">
     <h1>Criar conta</h1>
 
-    <p class="cadastro-subtitulo">Crie sua conta para continuar sua reserva.</p>
+    <p class="cadastro-subtitulo">
+      Crie sua conta para continuar sua reserva.
+    </p>
 
-    <input type="text" placeholder="Nome" [(ngModel)]="nome" (keyup.enter)="criarCadastro()" />
+<button type="button" class="google-btn" (click)="cadastroGoogle()">
+    <img src="/images/Logo-google.PNG" alt="Google">
+  Cadastrar com Google
+</button>
 
-    <input type="email" placeholder="E-mail" [(ngModel)]="email" (keyup.enter)="criarCadastro()" />
 
-    <input
-      type="password"
-      placeholder="Senha"
-      [(ngModel)]="senha"
-      (keyup.enter)="criarCadastro()"
-    />
+    <div class="campo">
+      <label>
+        Nome completo <strong>*</strong>
+      </label>
+
+      <input
+        type="text"
+        placeholder="Ex: Maria Silva"
+        [(ngModel)]="nome"
+        (keyup.enter)="criarCadastro()"
+      />
+    </div>
+
+
+    <div class="campo">
+      <label>
+        E-mail <strong>*</strong>
+      </label>
+
+      <input
+        type="email"
+        placeholder="Ex: maria@email.com"
+        [(ngModel)]="email"
+        (keyup.enter)="criarCadastro()"
+      />
+    </div>
+
+
+ <div class="campo">
+  <label>
+    Senha <strong>*</strong>
+  </label>
+
+  <input
+    type="password"
+    placeholder="Crie uma senha"
+    [(ngModel)]="senha"
+    (keyup.enter)="criarCadastro()"
+  />
+</div>
+
+    <div class="campo">
+      <label>
+        Confirmar senha <strong>*</strong>
+      </label>
+
+      <input
+        type="password"
+        placeholder="Digite novamente sua senha"
+        [(ngModel)]="confirmarSenha"
+        (keyup.enter)="criarCadastro()"
+      />
+    </div>
+
+
+    <label class="termos">
+      <input
+        type="checkbox"
+        [(ngModel)]="aceitouTermos"
+      />
+
+      <span>
+        Li e aceito os termos de uso e política de privacidade.
+        <strong>*</strong>
+      </span>
+    </label>
+
 
     @if (erroCadastro) {
       <div class="erro-cadastro">
-        {{ erroCadastro }}
+        ⚠️ {{ erroCadastro }}
       </div>
     }
 
-    <button type="button" class="criar-btn" (click)="criarCadastro()">Criar cadastro</button>
 
-    <p class="login-texto">Já tem conta?</p>
+    <button
+      type="button"
+      class="criar-btn"
+      (click)="criarCadastro()"
+    >
+      Criar cadastro
+    </button>
 
-    <button type="button" class="login-btn" (click)="irParaLogin()">Ir para login</button>
+
+    <p class="login-texto">
+      Já tem conta?
+    </p>
+
+
+    <button
+      type="button"
+      class="login-btn"
+      (click)="irParaLogin()"
+    >
+      Ir para login
+    </button>
+
   </div>
 </div>
