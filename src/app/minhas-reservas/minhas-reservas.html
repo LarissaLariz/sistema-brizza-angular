@@ -15,25 +15,43 @@
     </div>
   </div>
 
-  @if (reservas.length === 0) {
+  @if (carregandoReservas) {
+    <div class="sem-reservas">
+      <h2>Carregando reservas...</h2>
+      <p>Aguarde um instante.</p>
+    </div>
+  }
+
+  @if (!carregandoReservas && erroReservas) {
+    <div class="sem-reservas erro-reservas">
+      <h2>Erro ao carregar reservas</h2>
+      <p>{{ erroReservas }}</p>
+    </div>
+  }
+
+  @if (!carregandoReservas && !erroReservas && reservas.length === 0) {
     <div class="sem-reservas">
       <h2>Nenhuma reserva encontrada</h2>
       <p>Quando você fizer uma reserva, ela aparecerá aqui.</p>
     </div>
   }
 
-  @for (reserva of reservas; track reserva.id) {
+  @for (reserva of reservas; track reserva.origem + '-' + reserva.id) {
     <div
       class="reserva-card"
       [id]="'reserva-' + reserva.id"
       [class.reserva-destacada]="reserva.id === reservaDestacadaId"
+      [class.card-pendente]="obterStatusVisual(reserva) === 'pendente'"
+      [class.card-pago]="obterStatusVisual(reserva) === 'pago'"
+      [class.card-expirado]="obterStatusVisual(reserva) === 'expirado'"
+      [class.card-cancelada]="obterStatusVisual(reserva) === 'cancelada'"
     >
       <div class="reserva-header">
         <div>
           <h2>{{ reserva.titulo }}</h2>
 
           @if (reserva.id === reservaDestacadaId) {
-            <span class="tag-recente">Solicitação mais recente</span>
+            <span class="tag-recente">Reserva mais recente</span>
           }
 
           <p>{{ obterMensagemStatus(reserva) }}</p>
@@ -41,32 +59,58 @@
 
         <span
           class="status"
-          [class.pendente]="reserva.status === 'pendente'"
-          [class.pago]="reserva.status === 'pago'"
-          [class.cancelada]="reserva.status === 'cancelada'"
+          [class.pendente]="obterStatusVisual(reserva) === 'pendente'"
+          [class.pago]="obterStatusVisual(reserva) === 'pago'"
+          [class.expirado]="obterStatusVisual(reserva) === 'expirado'"
+          [class.cancelada]="obterStatusVisual(reserva) === 'cancelada'"
         >
-          {{ reserva.status }}
+          {{ obterTextoStatus(reserva) }}
         </span>
       </div>
 
+      @if (reservaAguardandoPagamento(reserva)) {
+        <div class="pagamento-pendente-card">
+          <div>
+            <span>Tempo restante para confirmar</span>
+            <strong>{{ tempoPagamentoFormatado(reserva) }}</strong>
+          </div>
+
+          <p>
+            As datas ficam reservadas temporariamente enquanto o pagamento está pendente.
+          </p>
+        </div>
+      }
+
       <div class="reserva-info">
         <div>
-          <span>Entrada</span>
+          <span class="info-label">
+            <svg class="info-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Entrada
+          </span>
           <strong>{{ formatarData(reserva.dataEntrada) }}</strong>
         </div>
 
         <div>
-          <span>Saída</span>
+          <span class="info-label">
+            <svg class="info-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Saída
+          </span>
           <strong>{{ formatarData(reserva.dataSaida) }}</strong>
         </div>
 
         <div>
-          <span>Hóspedes</span>
+          <span class="info-label">
+            <svg class="info-icon" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="2"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="17" cy="8" r="2.5" stroke="currentColor" stroke-width="2"/><path d="M15 20c.3-2.2 1.8-3.8 4-4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Hóspedes
+          </span>
           <strong>{{ calcularHospedes(reserva) }} pessoa(s)</strong>
         </div>
 
         <div>
-          <span>Período</span>
+          <span class="info-label">
+            <svg class="info-icon" viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            Período
+          </span>
           <strong>
             {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) }}
             {{ calcularNoites(reserva.dataEntrada, reserva.dataSaida) === 1 ? 'noite' : 'noites' }}
@@ -79,48 +123,162 @@
 
         <div class="responsavel-info">
           <div>
-            <span>Nome</span>
+            <span class="info-label">
+              <svg class="info-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Nome
+            </span>
             <strong>{{ obterNomeResponsavel(reserva) }}</strong>
           </div>
 
           <div>
-            <span>E-mail</span>
+            <span class="info-label">
+              <svg class="info-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="m4 6 8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              E-mail
+            </span>
             <strong>{{ obterEmailResponsavel(reserva) }}</strong>
           </div>
 
           <div>
-            <span>Telefone</span>
+            <span class="info-label">
+              <svg class="info-icon" viewBox="0 0 24 24" fill="none"><path d="M6 3c1 3 2 5 4 6-1 1.5-1.5 2.5-1 3.5 1.5 3 4.5 6 7.5 7.5 1 .5 2-.5 3-1.5 1 .5 3 1.5 6 2.5v3c0 1-1 2-2 2C11 25 3 17 3 5c0-1 1-2 2-2h1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+              Telefone
+            </span>
             <strong>{{ obterTelefone(reserva) }}</strong>
           </div>
 
           <div>
-            <span>País</span>
+            <span class="info-label">
+              <svg class="info-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.5 2.5 4 5.5 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.5-4-9s1.5-6.5 4-9Z" stroke="currentColor" stroke-width="2"/></svg>
+              País
+            </span>
             <strong>{{ obterPaisResponsavel(reserva) }}</strong>
           </div>
 
           <div>
-            <span>{{ obterTipoDocumento(reserva) }}</span>
+            <span class="info-label">
+              <svg class="info-icon" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M13 10h6M13 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              {{ obterTipoDocumento(reserva) }}
+            </span>
             <strong>{{ obterDocumento(reserva) }}</strong>
           </div>
         </div>
       </div>
+
+<div class="hospedes-reserva-box">
+
+  <div class="hospedes-header">
+
+    <h3>Hóspedes adicionais</h3>
+
+    <span class="quantidade-hospedes">
+      {{ obterHospedesAdicionais(reserva).length }}
+      {{ obterHospedesAdicionais(reserva).length === 1 ? 'pessoa' : 'pessoas' }}
+    </span>
+
+  </div>
+
+  @if (temHospedesAdicionais(reserva)) {
+
+    @for (hospede of obterHospedesAdicionais(reserva); track $index) {
+
+      <div class="hospede-card">
+
+        <div class="hospede-esquerda">
+
+          <div class="avatar" [class]="'avatar-cor-' + ($index % 4)">
+            👤
+          </div>
+
+          <div>
+
+            <h4>{{ hospede.nome }}</h4>
+
+            <span class="badge"
+                  [class.crianca]="hospede.tipo === 'crianca'">
+
+              {{ hospede.tipo === 'adulto'
+                  ? 'Adulto'
+                  : 'Criança' }}
+
+            </span>
+
+          </div>
+
+        </div>
+
+        <div class="hospede-direita">
+
+          @if (hospede.tipo === 'adulto') {
+
+            <span>CPF</span>
+
+            <strong>{{ hospede.cpf }}</strong>
+
+          }
+
+          @if (hospede.tipo === 'crianca') {
+
+            <span>Idade</span>
+
+            <strong>{{ hospede.idade }} anos</strong>
+
+          }
+
+        </div>
+
+      </div>
+
+    }
+
+    <div class="aviso-checkin">
+      <svg class="info-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v5M12 8v.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Todos os hóspedes adicionais serão solicitados no check-in.
+    </div>
+
+  } @else {
+
+    <div class="sem-hospedes-adicionais">
+
+      Nenhum hóspede adicional informado.
+
+    </div>
+
+  }
+
+</div>
 
       <div class="reserva-total">
         <span>Total</span>
         <strong>{{ formatarPreco(reserva.total) }}</strong>
       </div>
 
-      @if (reserva.status === 'pendente') {
-        <p class="prazo-cancelamento">
-          {{ mensagemCancelamento(reserva) }}
-        </p>
-
+      @if (reservaAguardandoPagamento(reserva)) {
         <div class="reserva-acoes">
-          <button type="button" class="whatsapp-btn" (click)="finalizarPeloWhatsapp(reserva)">
-            Realizar pagamento
+          <button
+            type="button"
+            class="pix-btn"
+            (click)="finalizarPeloWhatsapp(reserva, 'PIX')"
+          >
+            Pagar com PIX
           </button>
 
-          @if (podeCancelarReserva(reserva)) {
+          <button
+            type="button"
+            class="cartao-btn"
+            (click)="finalizarPeloWhatsapp(reserva, 'Cartão')"
+          >
+            Pagar com Cartão
+          </button>
+        </div>
+      }
+
+      @if (reservaConfirmada(reserva)) {
+        <div class="status-card pago-card">
+          Reserva confirmada. Em caso de dúvidas, entre em contato com a hospedagem.
+        </div>
+
+        @if (podeCancelarReserva(reserva)) {
+          <div class="reserva-acoes">
             <button
               type="button"
               class="cancelar-reserva-btn"
@@ -128,19 +286,17 @@
             >
               Cancelar reserva
             </button>
-          } @else {
-            <div class="cancelamento-bloqueado">Cancelamento gratuito indisponível</div>
-          }
+          </div>
+        }
+      }
+
+      @if (pagamentoExpirado(reserva)) {
+        <div class="status-card expirado-card">
+          O prazo para pagamento expirou. Faça uma nova reserva para escolher datas disponíveis.
         </div>
       }
 
-      @if (reserva.status === 'pago') {
-        <div class="status-card pago-card">
-          Reserva confirmada. Em caso de dúvidas, entre em contato com a hospedagem.
-        </div>
-      }
-
-      @if (reserva.status === 'cancelada') {
+      @if (reservaCancelada(reserva)) {
         <div class="status-card cancelada-card">
           Esta reserva foi cancelada e não está mais ativa.
         </div>

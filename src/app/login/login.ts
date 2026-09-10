@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { FirebaseService } from '../firebase';
 
 @Component({
   selector: 'app-login',
@@ -23,6 +24,7 @@ export class Login {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private firebaseService: FirebaseService
   ) {
     this.route.queryParams.subscribe((params) => {
       this.idHospedagem = params['id'] ? Number(params['id']) : null;
@@ -32,6 +34,23 @@ export class Login {
       this.criancas = Number(params['criancas'] || 0);
     });
   }
+
+async loginGoogle() {
+  try {
+    const usuario = await this.firebaseService.loginComGoogle();
+
+    localStorage.setItem(
+      'usuarioLogado',
+      JSON.stringify(usuario)
+    );
+
+    this.router.navigate(['/home']);
+
+  } catch (error) {
+    this.erroLogin = 'Não foi possível entrar com Google.';
+    console.error(error);
+  }
+}
 
   login() {
     const usuarioSalvo = localStorage.getItem('usuario');

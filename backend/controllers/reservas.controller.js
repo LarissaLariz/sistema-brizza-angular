@@ -60,6 +60,13 @@ async function criarReserva(req, res) {
       adultos,
       criancas,
       total,
+      responsavelNome,
+      responsavelEmail,
+      responsavelPais,
+      responsavelTipoDocumento,
+      responsavelDocumento,
+      responsavelTelefone,
+      hospedesAdicionais,
     } = req.body;
 
     const reservaConflitante = await pool.query(
@@ -93,9 +100,16 @@ async function criarReserva(req, res) {
         adultos,
         criancas,
         total,
-        status
+        status,
+        responsavel_nome,
+        responsavel_email,
+        responsavel_pais,
+        responsavel_tipo_documento,
+        responsavel_documento,
+        responsavel_telefone,
+        hospedes_adicionais
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb)
       RETURNING *
       `,
       [
@@ -109,6 +123,13 @@ async function criarReserva(req, res) {
         criancas,
         total,
         'pendente',
+        responsavelNome,
+        responsavelEmail,
+        responsavelPais,
+        responsavelTipoDocumento,
+        responsavelDocumento,
+        responsavelTelefone,
+        JSON.stringify(hospedesAdicionais || []),
       ],
     );
 

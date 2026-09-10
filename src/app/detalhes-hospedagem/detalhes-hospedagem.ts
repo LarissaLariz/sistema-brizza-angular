@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -34,6 +34,8 @@ export class DetalhesHospedagem {
 
   mostrarModalImagem = false;
   mostrarModalAutenticacao = false;
+  mostrarModalIndisponibilidade = false;
+  mostrarModalPagamento = false;
 
   imagemSelecionada = '';
   indiceImagemAtual = 0;
@@ -41,6 +43,13 @@ export class DetalhesHospedagem {
   mensagemReserva = '';
   mensagemErroReserva = '';
   preReservaCriada = false;
+  reservaCarregando = false;
+
+  tempoPixRestante = 30 * 60;
+  tempoRestante = 30 * 60;
+  cronometroPix: any = null;
+  cronometro: any = null;
+
   ultimaReservaId: number | null = null;
   ultimaReservaCriada: any = null;
 
@@ -66,68 +75,16 @@ export class DetalhesHospedagem {
     'Dezembro',
   ];
 
-diasCalendario: any[] = [];
+  diasCalendario: any[] = [];
+  reservasImovel: any[] = [];
 
-reservasImovel: any[] = [];
-
-hospedagens: any[] = [
-
-    {
-      id: 1,
-      titulo: 'Golden Beach 158',
-      local: 'Pitangueiras',
-      descricao: 'Hospedagem confortável no Guarujá...',
-      imagens: [
-        '/images/imagem1.jpeg',
-        '/images/imagem2.jpeg',
-        '/images/imagem3.jpeg',
-        '/images/imagem1.jpeg',
-        '/images/imagem2.jpeg',
-      ],
-      preco: 200,
-      hospedes: 4,
-      quartos: 1,
-      comodidades: [
-        { icone: '📶', nome: 'Wi-Fi' },
-        { icone: '🏊', nome: 'Piscina' },
-        { icone: '❄️', nome: 'Ar-condicionado' },
-        { icone: '🍳', nome: 'Cozinha' },
-      ],
-    },
-    {
-      id: 2,
-      titulo: 'Loft no centro',
-      local: 'Tombo',
-      descricao: 'Vista para a cidade',
-      imagens: ['/images/imagem2.jpeg', '/images/imagem1.jpeg', '/images/imagem3.jpeg'],
-      preco: 180,
-      hospedes: 4,
-      quartos: 1,
-      comodidades: [
-        { icone: '📶', nome: 'Wi-Fi' },
-        { icone: '🍳', nome: 'Cozinha' },
-      ],
-    },
-    {
-      id: 3,
-      titulo: 'Loft na serra',
-      local: 'Astúrias',
-      descricao: 'Vista para a montanha',
-      imagens: ['/images/imagem3.jpeg', '/images/imagem1.jpeg', '/images/imagem2.jpeg'],
-      preco: 220,
-      hospedes: 4,
-      quartos: 1,
-      comodidades: [
-        { icone: '📶', nome: 'Wi-Fi' },
-        { icone: '❄️', nome: 'Ar-condicionado' },
-      ],
-    },
-  ];
+  erroCarregarImovel = '';
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private imoveisService: Imoveis,
+    private cdr: ChangeDetectorRef,
   ) {
     this.dataHoje = this.gerarDataHoje();
 
@@ -136,14 +93,28 @@ hospedagens: any[] = [
     this.mesCalendario = hoje.getMonth();
     this.anoCalendario = hoje.getFullYear();
 
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-
-    this.hospedagemSelecionada =
-      this.hospedagens.find((hospedagem) => hospedagem.id === id) || null;
-
-    this.carregarImovelDaApi(id);
-    this.carregarReservasDoImovel(id);
     this.carregarDadosResponsavelDoUsuarioLogado();
+
+    this.route.paramMap.subscribe((params) => {
+      const id = Number(params.get('id'));
+
+      this.hospedagemSelecionada = null;
+      this.erroCarregarImovel = '';
+
+      this.preReservaCriada = false;
+      this.mostrarModalPagamento = false;
+      this.mostrarModalAutenticacao = false;
+      this.mensagemErroReserva = '';
+      this.calendarioAberto = null;
+
+      if (!id || Number.isNaN(id)) {
+        this.erroCarregarImovel = 'Imóvel inválido.';
+        return;
+      }
+
+      this.carregarImovelDaApi(id);
+      this.carregarReservasDoImovel(id);
+    });
 
     this.route.queryParams.subscribe((params) => {
       this.dataEntrada = params['dataEntrada'] || null;
@@ -162,19 +133,23 @@ hospedagens: any[] = [
     });
   }
 
+  ngOnDestroy() {
+    this.pararCronometroPix();
+  }
+
   carregarReservasDoImovel(id: number) {
-  this.imoveisService.listarReservasPorImovel(id).subscribe({
-    next: (reservas: any[]) => {
-      this.reservasImovel = reservas;
-      this.montarCalendario();
-      this.verificarDisponibilidadeSelecionada();
-    },
-    error: (erro) => {
-      console.error('Erro ao buscar reservas do imóvel:', erro);
-      this.reservasImovel = [];
-    },
-  });
-}
+    this.imoveisService.listarReservasPorImovel(id).subscribe({
+      next: (reservas: any[]) => {
+        this.reservasImovel = reservas;
+        this.montarCalendario();
+        this.verificarDisponibilidadeSelecionada();
+      },
+      error: (erro) => {
+        console.error('Erro ao buscar reservas do imóvel:', erro);
+        this.reservasImovel = [];
+      },
+    });
+  }
 
   carregarDadosResponsavelDoUsuarioLogado() {
     const usuarioLogado = localStorage.getItem('usuarioLogado');
@@ -244,58 +219,42 @@ hospedagens: any[] = [
     return `${ano}-${mes}-${dia}`;
   }
 
-  carregarImoveisDoAdmin() {
-    const dados = localStorage.getItem('imoveis');
+carregarImovelDaApi(id: number) {
+  console.log('Buscando imóvel:', id);
 
-    if (!dados) {
-      return;
+  this.imoveisService.buscarImovelPorId(id).subscribe({
+    next: (imovel: any) => {
+
+      console.log('Resposta da API:', imovel);
+
+      this.hospedagemSelecionada = {
+        id: Number(imovel.id),
+        titulo: imovel.nome,
+        local: imovel.cidade,
+        descricao: imovel.descricao,
+        imagens:
+          Array.isArray(imovel.imagens) && imovel.imagens.length > 0
+            ? imovel.imagens
+            : ['/images/imagem1.jpeg'],
+        preco: Number(imovel.preco_por_noite),
+        hospedes: Number(imovel.capacidade_maxima),
+        quartos: 1,
+        taxaLimpeza: 0,
+        comodidades: [
+          { icone: '📶', nome: 'Wi-Fi' }
+        ]
+      };
+
+      console.log('Objeto criado:', this.hospedagemSelecionada);
+      this.cdr.detectChanges();
+console.log('Depois do detectChanges:', this.hospedagemSelecionada);
+    },
+
+    error: (erro) => {
+      console.error('ERRO DA API:', erro);
     }
-
-    try {
-      const imoveisAdmin = JSON.parse(dados);
-
-      const imoveisFormatados = imoveisAdmin.map((imovel: any) => {
-        return {
-          ...imovel,
-          imagens: imovel.imagens || [],
-          comodidades: this.formatarComodidades(imovel.comodidades || []),
-        };
-      });
-
-      this.hospedagens = [...this.hospedagens, ...imoveisFormatados];
-    } catch {
-      return;
-    }
-  }
-
-  carregarImovelDaApi(id: number) {
-    this.imoveisService.buscarImovelPorId(id).subscribe({
-      next: (imovel: any) => {
-        this.hospedagemSelecionada = {
-          id: Number(imovel.id),
-          titulo: imovel.nome,
-          local: imovel.cidade,
-          descricao: imovel.descricao,
-          imagens: ['/images/imagem1.jpeg', '/images/imagem2.jpeg', '/images/imagem3.jpeg'],
-          preco: Number(imovel.preco_por_noite),
-          hospedes: Number(imovel.capacidade_maxima),
-          quartos: 1,
-          taxaLimpeza: 0,
-          comodidades: [
-            { icone: '📶', nome: 'Wi-Fi' },
-            { icone: '🍳', nome: 'Cozinha' },
-          ],
-        };
-
-        this.montarCalendario();
-        this.verificarDisponibilidadeSelecionada();
-      },
-      error: (erro) => {
-        console.error('Erro ao buscar imóvel da API:', erro);
-        this.hospedagemSelecionada = null;
-      },
-    });
-  }
+  });
+}
 
   formatarComodidades(comodidades: any[]) {
     return comodidades.map((comodidade) => {
@@ -461,8 +420,8 @@ hospedagens: any[] = [
     for (let i = 0; i < this.hospedesAdicionais.length; i++) {
       const hospede = this.hospedesAdicionais[i];
 
-      if (!this.nomeValido(hospede.nome || '')) {
-        this.mensagemErroReserva = `Informe um nome válido para o hóspede adicional ${i + 1}.`;
+      if (!this.nomeCompletoValido(hospede.nome || '')) {
+        this.mensagemErroReserva = `Informe nome e sobrenome do hóspede adicional ${i + 1}.`;
         return false;
       }
 
@@ -739,14 +698,11 @@ hospedagens: any[] = [
     return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
   }
 
-  nomeValido(nome: string) {
-    const nomeLimpo = nome.trim();
+  nomeCompletoValido(nome: string) {
+    const nomeLimpo = nome.trim().replace(/\s{2,}/g, ' ');
+    const partes = nomeLimpo.split(' ').filter((parte) => parte.length >= 2);
 
-    if (nomeLimpo.length < 3) {
-      return false;
-    }
-
-    return /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/.test(nomeLimpo);
+    return partes.length >= 2 && /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/.test(nomeLimpo);
   }
 
   emailValido(email: string) {
@@ -897,12 +853,12 @@ hospedagens: any[] = [
   }
 
   normalizarDataApi(data: string) {
-  if (!data) {
-    return '';
-  }
+    if (!data) {
+      return '';
+    }
 
-  return data.slice(0, 10);
-}
+    return data.slice(0, 10);
+  }
 
   montarCalendario() {
     const primeiroDiaDoMes = new Date(this.anoCalendario, this.mesCalendario, 1);
@@ -972,14 +928,6 @@ hospedagens: any[] = [
     return data > this.dataEntrada && data < this.dataSaida;
   }
 
-  buscarReservasSalvas() {
-    try {
-      return JSON.parse(localStorage.getItem('reservas') || '[]');
-    } catch {
-      return [];
-    }
-  }
-
   buscarBloqueiosManuaisSalvos() {
     try {
       return JSON.parse(localStorage.getItem('bloqueiosDatas') || '[]');
@@ -997,38 +945,27 @@ hospedagens: any[] = [
       return null;
     }
 
-const reservas = this.reservasImovel;
-
-    const reservaEncontrada = reservas.find((reserva: any) => {
-      const mesmaHospedagem = true;
-
+    const reservaEncontrada = this.reservasImovel.find((reserva: any) => {
       const status = reserva.status || 'pendente';
-
       const reservaBloqueia = status === 'pendente' || status === 'pago';
 
-const dataEntradaReserva = this.normalizarDataApi(reserva.data_entrada);
-const dataSaidaReserva = this.normalizarDataApi(reserva.data_saida);
+      const dataEntradaReserva = this.normalizarDataApi(reserva.data_entrada);
+      const dataSaidaReserva = this.normalizarDataApi(reserva.data_saida);
 
-if (!mesmaHospedagem || !reservaBloqueia || !dataEntradaReserva || !dataSaidaReserva) {
-  return false;
-}
-
-return this.dataDentroDoPeriodo(data, dataEntradaReserva, dataSaidaReserva);
-
-      if (!mesmaHospedagem || !reservaBloqueia || !reserva.dataEntrada || !reserva.dataSaida) {
+      if (!reservaBloqueia || !dataEntradaReserva || !dataSaidaReserva) {
         return false;
       }
 
-      return this.dataDentroDoPeriodo(data, reserva.dataEntrada, reserva.dataSaida);
+      return this.dataDentroDoPeriodo(data, dataEntradaReserva, dataSaidaReserva);
     });
 
     if (reservaEncontrada) {
       return {
-  tipo: 'reserva',
-  status: reservaEncontrada.status || 'pendente',
-  dataEntrada: this.normalizarDataApi(reservaEncontrada.data_entrada),
-dataSaida: this.normalizarDataApi(reservaEncontrada.data_saida),
-};
+        tipo: 'reserva',
+        status: reservaEncontrada.status || 'pendente',
+        dataEntrada: this.normalizarDataApi(reservaEncontrada.data_entrada),
+        dataSaida: this.normalizarDataApi(reservaEncontrada.data_saida),
+      };
     }
 
     const bloqueios = this.buscarBloqueiosManuaisSalvos();
@@ -1213,7 +1150,7 @@ dataSaida: this.normalizarDataApi(reservaEncontrada.data_saida),
   }
 
   confirmarReserva() {
-    if (this.preReservaCriada) {
+    if (this.preReservaCriada || this.reservaCarregando) {
       return;
     }
 
@@ -1279,8 +1216,8 @@ dataSaida: this.normalizarDataApi(reservaEncontrada.data_saida),
       return;
     }
 
-    if (!this.nomeValido(this.responsavelNome)) {
-      this.mensagemErroReserva = 'Informe um nome válido. Use apenas letras, espaços e acentos.';
+    if (!this.nomeCompletoValido(this.responsavelNome)) {
+      this.mensagemErroReserva = 'Informe nome e sobrenome do responsável pela reserva.';
       return;
     }
 
@@ -1330,9 +1267,14 @@ dataSaida: this.normalizarDataApi(reservaEncontrada.data_saida),
       return;
     }
 
+    if (!this.responsavelTelefone.trim()) {
+      this.mensagemErroReserva = 'Informe o telefone do responsável pela reserva.';
+      return;
+    }
+
     if (!this.telefoneValido(this.responsavelTelefone)) {
       this.mensagemErroReserva =
-        'Informe um telefone válido. Para telefone internacional, comece com + e o código do país.';
+        'Informe um telefone válido. Use DDD + número. Exemplo: (13) 99999-9999.';
       return;
     }
 
@@ -1350,10 +1292,21 @@ dataSaida: this.normalizarDataApi(reservaEncontrada.data_saida),
       adultos: this.adultos,
       criancas: this.criancas,
       total: this.valorTotalReserva,
+
+      responsavelNome: this.responsavelNome,
+      responsavelEmail: this.responsavelEmail,
+      responsavelPais: this.responsavelPais,
+      responsavelTipoDocumento: this.responsavelTipoDocumento,
+      responsavelDocumento: this.responsavelDocumento,
+      responsavelTelefone: this.responsavelTelefone,
+      hospedesAdicionais: this.hospedesAdicionais,
     };
+
+    this.reservaCarregando = true;
 
     this.imoveisService.criarReserva(novaReserva).subscribe({
       next: (reserva: any) => {
+        this.reservaCarregando = false;
         this.ultimaReservaId = Number(reserva.id);
 
         this.ultimaReservaCriada = {
@@ -1372,23 +1325,139 @@ dataSaida: this.normalizarDataApi(reservaEncontrada.data_saida),
           valorNoiteCalculado: this.valorNoiteCalculado,
         };
 
-        this.preReservaCriada = true;
+        this.preReservaCriada = false;
+        this.mostrarModalPagamento = false;
+        this.calendarioAberto = null;
+        this.mensagemErroReserva = '';
+        this.mensagemReserva = '';
 
-        this.mensagemReserva =
-          'Solicitação registrada. Sua reserva ainda não está confirmada. Realize o pagamento para confirmar.';
+        this.pararCronometroPix();
 
-        this.montarCalendario();
+        this.router.navigate(['/minhas-reservas'], {
+          queryParams: {
+            reservaId: this.ultimaReservaId,
+          },
+        });
       },
       error: (erro) => {
+        this.reservaCarregando = false;
+
         console.error('Erro ao salvar reserva:', erro);
+
+        if (erro.status === 409) {
+          this.mensagemErroReserva =
+            'Ops! Essas datas acabaram de ser reservadas. Por favor, escolha novas datas disponíveis.';
+
+          this.mostrarModalIndisponibilidade = true;
+
+          this.carregarReservasDoImovel(this.hospedagemSelecionada.id);
+
+          return;
+        }
 
         this.mensagemErroReserva = 'Erro ao salvar reserva. Tente novamente.';
       },
     });
   }
 
+  iniciarCronometroPix() {
+    this.pararCronometroPix();
+
+    this.tempoPixRestante = 30 * 60;
+    this.tempoRestante = this.tempoPixRestante;
+
+    this.cronometroPix = setInterval(() => {
+      this.tempoPixRestante--;
+
+      if (this.tempoPixRestante < 0) {
+        this.tempoPixRestante = 0;
+      }
+
+      this.tempoRestante = this.tempoPixRestante;
+
+      if (this.tempoPixRestante <= 0) {
+        this.expirarPreReserva();
+      }
+
+      this.cdr.detectChanges();
+    }, 1000);
+
+    this.cronometro = this.cronometroPix;
+  }
+
+  iniciarCronometroPagamento() {
+    this.iniciarCronometroPix();
+  }
+
+  pararCronometroPix() {
+    if (this.cronometroPix) {
+      clearInterval(this.cronometroPix);
+      this.cronometroPix = null;
+    }
+
+    if (this.cronometro) {
+      clearInterval(this.cronometro);
+      this.cronometro = null;
+    }
+  }
+
+  expirarPreReserva() {
+    this.pararCronometroPix();
+
+    this.mostrarModalPagamento = false;
+    this.preReservaCriada = false;
+    this.reservaCarregando = false;
+
+    this.mensagemErroReserva =
+      'O prazo para pagamento expirou. Faça uma nova reserva para tentar novamente.';
+
+    if (this.hospedagemSelecionada?.id) {
+      this.carregarReservasDoImovel(this.hospedagemSelecionada.id);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  fecharModalPagamento() {
+    this.mostrarModalPagamento = false;
+  }
+
+  get tempoPixFormatado() {
+    const minutos = Math.floor(this.tempoPixRestante / 60);
+    const segundos = this.tempoPixRestante % 60;
+
+    return `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+  }
+
+  get tempoFormatado() {
+    return this.tempoPixFormatado;
+  }
+
+  formatarTempoPix() {
+    return this.tempoPixFormatado;
+  }
+
   fecharModalAutenticacao() {
     this.mostrarModalAutenticacao = false;
+  }
+
+  fecharModalErroReserva() {
+    this.mensagemErroReserva = '';
+    this.reservaCarregando = false;
+  }
+
+  fecharModalIndisponibilidade() {
+    this.mostrarModalIndisponibilidade = false;
+    this.mensagemErroReserva = '';
+    this.dataEntrada = null;
+    this.dataSaida = null;
+    this.calendarioAberto = 'entrada';
+
+    if (this.hospedagemSelecionada?.id) {
+      this.carregarReservasDoImovel(this.hospedagemSelecionada.id);
+    }
+
+    this.montarCalendario();
   }
 
   irParaLoginReserva() {
@@ -1415,7 +1484,15 @@ dataSaida: this.normalizarDataApi(reservaEncontrada.data_saida),
     });
   }
 
-  irParaPagamentoWhatsappUltima() {
+  irParaPagamentoPix() {
+    this.irParaPagamentoWhatsappUltima('PIX');
+  }
+
+  irParaPagamentoCartao() {
+    this.irParaPagamentoWhatsappUltima('Cartão');
+  }
+
+  irParaPagamentoWhatsappUltima(tipoPagamento = 'pagamento') {
     const reserva = this.ultimaReservaCriada;
 
     if (!reserva) return;
@@ -1424,7 +1501,9 @@ dataSaida: this.normalizarDataApi(reservaEncontrada.data_saida),
 
     const documento = reserva.responsavelDocumento || 'Não informado';
 
-    const mensagem = `Olá! Quero realizar o pagamento da minha reserva:
+    const mensagem = `Olá! Quero realizar o pagamento da minha reserva.
+
+Forma de pagamento escolhida: ${tipoPagamento}
 
 Imóvel: ${reserva.titulo || reserva.tituloImovel}
 Entrada: ${this.formatarData(reserva.dataEntrada)}
@@ -1437,7 +1516,9 @@ Documento (${tipoDocumento}): ${documento}
 Telefone: ${reserva.responsavelTelefone || 'Não informado'}
 E-mail: ${reserva.responsavelEmail || reserva.usuarioEmail}
 Valor por noite: ${this.formatarPreco(reserva.valorNoiteCalculado || this.valorNoiteCalculado)}
-Total: ${this.formatarPreco(reserva.total)}`;
+Total: ${this.formatarPreco(reserva.total)}
+
+Minha reserva está pré-bloqueada por 30 minutos.`;
 
     const url = `https://wa.me/5511999999999?text=${encodeURIComponent(mensagem)}`;
 

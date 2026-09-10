@@ -64,11 +64,8 @@
                 [disabled]="preReservaCriada"
                 (click)="abrirCalendario('entrada')"
               >
-                <label>Entrada</label>
-
-                <span>
-                  {{ dataEntrada ? formatarData(dataEntrada) : 'Selecionar entrada' }}
-                </span>
+                <label>Entrada *</label>
+                <span>{{ dataEntrada ? formatarData(dataEntrada) : 'Selecionar entrada' }}</span>
               </button>
 
               <button
@@ -78,11 +75,8 @@
                 [disabled]="preReservaCriada"
                 (click)="abrirCalendario('saida')"
               >
-                <label>Saída</label>
-
-                <span>
-                  {{ dataSaida ? formatarData(dataSaida) : 'Selecionar saída' }}
-                </span>
+                <label>Saída *</label>
+                <span>{{ dataSaida ? formatarData(dataSaida) : 'Selecionar saída' }}</span>
               </button>
             </div>
 
@@ -93,7 +87,6 @@
 
                   <div>
                     <strong>{{ mesAnoCalendario }}</strong>
-
                     <span>
                       {{
                         calendarioAberto === 'entrada'
@@ -142,27 +135,16 @@
                 </div>
 
                 <div class="calendario-legenda">
-                  <span>
-                    <i class="legenda-disponivel"></i>
-                    Disponível
-                  </span>
-
-                  <span>
-                    <i class="legenda-selecionado"></i>
-                    Selecionado
-                  </span>
-
-                  <span>
-                    <i class="legenda-bloqueado"></i>
-                    Bloqueado
-                  </span>
+                  <span><i class="legenda-disponivel"></i> Disponível</span>
+                  <span><i class="legenda-selecionado"></i> Selecionado</span>
+                  <span><i class="legenda-bloqueado"></i> Bloqueado</span>
                 </div>
               </div>
             }
 
             <div class="reserva-contador">
               <div class="contador-texto">
-                <strong>Adultos</strong>
+                <strong>Adultos *</strong>
                 <span>13 anos ou mais</span>
               </div>
 
@@ -219,11 +201,14 @@
             <div class="responsavel-area">
               <h3>Dados do responsável</h3>
 
-              <p>O responsável conta como o primeiro adulto da reserva.</p>
+              <p>
+                Os campos com * são obrigatórios. O responsável conta como o primeiro adulto da
+                reserva.
+              </p>
 
               <div class="responsavel-grid">
                 <div class="reserva-campo responsavel-campo">
-                  <label>Nome completo</label>
+                  <label>Nome completo *</label>
 
                   <input
                     type="text"
@@ -236,7 +221,7 @@
                 </div>
 
                 <div class="reserva-campo responsavel-campo">
-                  <label>E-mail</label>
+                  <label>E-mail *</label>
 
                   <input
                     type="email"
@@ -249,7 +234,7 @@
                 </div>
 
                 <div class="reserva-campo responsavel-campo">
-                  <label>País</label>
+                  <label>País *</label>
 
                   <select
                     [ngModel]="responsavelPais"
@@ -273,7 +258,7 @@
                 </div>
 
                 <div class="reserva-campo responsavel-campo">
-                  <label>Tipo de documento</label>
+                  <label>Tipo de documento *</label>
 
                   <select
                     [ngModel]="responsavelTipoDocumento"
@@ -287,7 +272,7 @@
                 </div>
 
                 <div class="reserva-campo responsavel-campo">
-                  <label>Número do documento</label>
+                  <label>Número do documento *</label>
 
                   <input
                     type="text"
@@ -313,13 +298,13 @@
                 </div>
 
                 <div class="reserva-campo responsavel-campo">
-                  <label>Telefone</label>
+                  <label>Telefone *</label>
 
                   <input
                     type="tel"
                     [value]="responsavelTelefone"
                     (input)="formatarTelefoneInput($event)"
-                    placeholder="Ex: (13) 99999-9999 ou +54 9 11 1234"
+                    placeholder="Ex: (13) 99999-9999"
                     maxlength="25"
                     [disabled]="preReservaCriada"
                   />
@@ -333,7 +318,7 @@
 
                 <p>
                   Informe os dados das pessoas que estarão com o responsável. Adultos precisam
-                  informar CPF. Crianças até 5 anos não pagam.
+                  informar nome completo e CPF. Crianças até 5 anos não pagam.
                 </p>
 
                 <div class="hospedes-lista">
@@ -352,7 +337,7 @@
                       </div>
 
                       <div class="reserva-campo responsavel-campo">
-                        <label>Nome completo</label>
+                        <label>Nome completo *</label>
 
                         <input
                           type="text"
@@ -366,7 +351,7 @@
 
                       @if (hospede.tipo === 'adulto') {
                         <div class="reserva-campo responsavel-campo">
-                          <label>CPF</label>
+                          <label>CPF *</label>
 
                           <input
                             type="text"
@@ -382,7 +367,7 @@
 
                       @if (hospede.tipo === 'crianca') {
                         <div class="reserva-campo responsavel-campo">
-                          <label>Idade</label>
+                          <label>Idade *</label>
 
                           <input
                             type="text"
@@ -400,30 +385,6 @@
                 </div>
               </div>
             }
-
-            <div class="calculo-reserva-card">
-              <h3>Resumo do valor</h3>
-
-              <div class="linha-calculo">
-                <span>Valor base por noite</span>
-                <strong>{{ formatarPreco(hospedagemSelecionada.preco) }}</strong>
-              </div>
-
-              <div class="linha-calculo">
-                <span>Hóspedes pagantes</span>
-                <strong>{{ totalHospedesPagantes }}</strong>
-              </div>
-
-              <div class="linha-calculo">
-                <span>Adicional por ocupação</span>
-                <strong>{{ percentualAdicionalHospedes * 100 }}%</strong>
-              </div>
-
-              <div class="linha-calculo destaque">
-                <span>Valor calculado por noite</span>
-                <strong>{{ formatarPreco(valorNoiteCalculado) }}</strong>
-              </div>
-            </div>
           }
 
           @if (!usuarioEstaLogado && !preReservaCriada) {
@@ -440,10 +401,9 @@
           <div class="reserva-total" *ngIf="quantidadeNoites > 0">
             <div class="linha-total">
               <span>
-                {{ formatarPreco(valorNoiteCalculado) }}
+                {{ quantidadeNoites }} noite(s)
                 x
-                {{ quantidadeNoites }}
-                noite(s)
+                {{ formatarPreco(valorNoiteCalculado) }}
               </span>
 
               <strong>{{ formatarPreco(subtotalDiarias) }}</strong>
@@ -451,49 +411,24 @@
 
             <div class="linha-total" *ngIf="taxaLimpezaReserva > 0">
               <span>Taxa de limpeza</span>
-
-              <strong>
-                {{ formatarPreco(taxaLimpezaReserva) }}
-              </strong>
+              <strong>{{ formatarPreco(taxaLimpezaReserva) }}</strong>
             </div>
 
             <div class="linha-total-total">
-              <span>Total da reserva</span>
-
-              <strong>
-                {{ formatarPreco(valorTotalReserva) }}
-              </strong>
+              <span>Total</span>
+              <strong>{{ formatarPreco(valorTotalReserva) }}</strong>
             </div>
           </div>
 
           @if (!preReservaCriada) {
-            <button class="reserva-btn" type="button" (click)="confirmarReserva()">
-              Solicitar reserva
+            <button
+              class="reserva-btn"
+              type="button"
+              [disabled]="reservaCarregando"
+              (click)="confirmarReserva()"
+            >
+              Reservar agora
             </button>
-          }
-
-          @if (mensagemErroReserva) {
-            <div class="erro-reserva-card">
-              {{ mensagemErroReserva }}
-            </div>
-          }
-
-          @if (preReservaCriada) {
-            <div class="pagamento-card">
-              <div class="pagamento-icon">✓</div>
-
-              <h3>Solicitação registrada</h3>
-
-              <p>Sua reserva ainda não está confirmada. Realize o pagamento para confirmar.</p>
-
-              <button class="btn-pagamento" type="button" (click)="irParaPagamentoWhatsappUltima()">
-                Realizar pagamento
-              </button>
-
-              <button class="btn-minha-reserva" type="button" (click)="irParaMinhaReserva()">
-                Ir para minha reserva
-              </button>
-            </div>
           }
         </div>
       </div>
@@ -536,6 +471,108 @@
       </div>
     }
 
+    @if (mostrarModalPagamento) {
+      <div class="modal-fundo">
+        <div class="modal-reserva modal-pagamento">
+          <div class="pagamento-icon">✓</div>
+
+          <div class="modal-header">
+            <h2>Reserva pré-bloqueada</h2>
+
+            <p>
+              Sua reserva foi pré-bloqueada por 30 minutos. Para garantir essas datas, realize o
+              pagamento antes do tempo expirar.
+            </p>
+          </div>
+
+          <div class="contador-pagamento-card">
+            <span>Tempo restante para pagamento</span>
+            <strong>{{ tempoPixFormatado }}</strong>
+          </div>
+
+          <div class="modal-resumo pagamento-resumo">
+            <strong>{{ hospedagemSelecionada.titulo }}</strong>
+
+            <div class="pagamento-resumo-linha">
+              <span>📅 Check-in</span>
+              <strong>{{ formatarData(dataEntrada || '') }}</strong>
+            </div>
+
+            <div class="pagamento-resumo-linha">
+              <span>📅 Check-out</span>
+              <strong>{{ formatarData(dataSaida || '') }}</strong>
+            </div>
+
+            <div class="pagamento-resumo-linha">
+              <span>👤 Hóspedes</span>
+              <strong>{{ adultos + criancas }}</strong>
+            </div>
+
+            <div class="pagamento-resumo-linha total">
+              <span>💰 Total</span>
+              <strong>{{ formatarPreco(valorTotalReserva) }}</strong>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-pagamento" type="button" (click)="irParaPagamentoPix()">
+              Pagar com PIX
+            </button>
+
+            <button class="btn-cartao" type="button" (click)="irParaPagamentoCartao()">
+              Pagar com Cartão
+            </button>
+
+            <button class="btn-minha-reserva" type="button" (click)="irParaMinhaReserva()">
+              Ir para minha reserva
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (mensagemErroReserva && !mostrarModalIndisponibilidade && !mostrarModalPagamento) {
+      <div class="modal-fundo">
+        <div class="modal-reserva modal-alerta">
+          <div class="modal-header">
+            <h2>Campos obrigatórios</h2>
+            <p>{{ mensagemErroReserva }}</p>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              class="modal-btn-principal"
+              type="button"
+              (click)="fecharModalErroReserva()"
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (mostrarModalIndisponibilidade) {
+      <div class="modal-fundo">
+        <div class="modal-reserva modal-indisponibilidade">
+          <div class="modal-header">
+            <h2>Ops! Essas datas acabaram de ser reservadas.</h2>
+            <p>Por favor, escolha novas datas disponíveis.</p>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              class="modal-btn-principal"
+              type="button"
+              (click)="fecharModalIndisponibilidade()"
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
     <div class="modal-imagem-fundo" *ngIf="mostrarModalImagem" (click)="fecharImagem()">
       <button class="modal-imagem-fechar" type="button" (click)="fecharImagem()">×</button>
 
@@ -556,6 +593,12 @@
       >
         ›
       </button>
+    </div>
+  </div>
+} @else {
+  <div class="detalhes-page">
+    <div class="reserva-box">
+      <p>Carregando hospedagem...</p>
     </div>
   </div>
 }

@@ -73,17 +73,24 @@ export class Home implements AfterViewInit {
 
     this.imoveisService.listarImoveis().subscribe({
       next: (imoveisDoBanco: any[]) => {
-        this.hospedagens = imoveisDoBanco.map((imovel: any) => ({
-          id: Number(imovel.id),
-          titulo: imovel.nome,
-          local: imovel.cidade,
-          descricao: imovel.descricao,
-          imagem: '/images/imagem1.jpeg',
-          imagens: ['/images/imagem1.jpeg', '/images/imagem2.jpeg', '/images/imagem3.jpeg'],
-          preco: Number(imovel.preco_por_noite),
-          hospedes: Number(imovel.capacidade_maxima),
-          quartos: 1,
-        }));
+        this.hospedagens = imoveisDoBanco.map((imovel: any) => {
+          const imagensDoImovel =
+            Array.isArray(imovel.imagens) && imovel.imagens.length > 0
+              ? imovel.imagens
+              : ['/images/imagem1.jpeg'];
+
+          return {
+            id: Number(imovel.id),
+            titulo: imovel.nome,
+            local: imovel.cidade,
+            descricao: imovel.descricao,
+            imagem: imagensDoImovel[0],
+            imagens: imagensDoImovel,
+            preco: Number(imovel.preco_por_noite),
+            hospedes: Number(imovel.capacidade_maxima),
+            quartos: 1,
+          };
+        });
 
         this.hospedagensFiltradas = [...this.hospedagens];
         this.carregandoImoveis = false;
@@ -391,4 +398,7 @@ export class Home implements AfterViewInit {
 
     return data > this.dataEntrada && data < this.dataSaida;
   }
+  irParaDetalhes(id: number) {
+  this.router.navigate(['/detalhes', id]); 
+}
 }

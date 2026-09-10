@@ -1,6 +1,7 @@
 import { Component, ChangeDetectorRef, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Imoveis } from '../services/imoveis';
 
 @Component({
   selector: 'app-admin-imoveis',
@@ -32,54 +33,6 @@ export class AdminImoveis {
     'Elevador',
   ];
 
-  imoveisFixos = [
-    {
-      id: 1,
-      origem: 'fixo',
-      titulo: 'Golden Beach 158',
-      local: 'Pitangueiras',
-      descricao: 'Hospedagem confortável no Guarujá...',
-      imagens: ['/images/imagem1.jpeg', '/images/imagem2.jpeg', '/images/imagem3.jpeg'],
-      preco: 200,
-      taxaLimpeza: 0,
-      checkin: '14:00',
-      checkout: '11:00',
-      hospedes: 4,
-      quartos: 1,
-      comodidades: ['Wi-Fi', 'Piscina', 'Ar-condicionado', 'Cozinha'],
-    },
-    {
-      id: 2,
-      origem: 'fixo',
-      titulo: 'Loft no centro',
-      local: 'Tombo',
-      descricao: 'Vista para a cidade',
-      imagens: ['/images/imagem2.jpeg', '/images/imagem1.jpeg', '/images/imagem3.jpeg'],
-      preco: 180,
-      taxaLimpeza: 0,
-      checkin: '14:00',
-      checkout: '11:00',
-      hospedes: 4,
-      quartos: 1,
-      comodidades: ['Wi-Fi', 'Cozinha'],
-    },
-    {
-      id: 3,
-      origem: 'fixo',
-      titulo: 'Loft na serra',
-      local: 'Astúrias',
-      descricao: 'Vista para a montanha',
-      imagens: ['/images/imagem3.jpeg', '/images/imagem1.jpeg', '/images/imagem2.jpeg'],
-      preco: 220,
-      taxaLimpeza: 0,
-      checkin: '14:00',
-      checkout: '11:00',
-      hospedes: 4,
-      quartos: 1,
-      comodidades: ['Wi-Fi', 'Ar-condicionado'],
-    },
-  ];
-
   novoImovel = {
     titulo: '',
     local: '',
@@ -97,28 +50,51 @@ export class AdminImoveis {
   constructor(
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
+    private imoveisService: Imoveis,
   ) {
     this.carregarImoveis();
   }
 
   carregarImoveis() {
-    const dados = localStorage.getItem('imoveis');
-    const imoveisSalvos = dados ? JSON.parse(dados) : [];
-
-    const mapa = new Map<number, any>();
-
-    this.imoveisFixos.forEach((imovel) => {
-      mapa.set(imovel.id, imovel);
+    this.imoveisService.listarImoveis().subscribe({
+      next: (imoveisDoBanco: any[]) => {
+        this.imoveis = imoveisDoBanco.map((imovel: any) => this.mapearImovelDoBanco(imovel));
+        this.cdr.detectChanges();
+      },
+      error: (erro) => {
+        console.error('Erro ao carregar imóveis da API:', erro);
+        this.mensagemErro = 'Não foi possível carregar os imóveis. Verifique se o backend está rodando.';
+        this.cdr.detectChanges();
+      },
     });
+  }
 
-    imoveisSalvos.forEach((imovel: any) => {
-      mapa.set(imovel.id, {
-        ...imovel,
-        origem: imovel.origem || 'criado',
-      });
-    });
+  mapearImovelDoBanco(imovel: any) {
+    return {
+      id: Number(imovel.id),
+      titulo: imovel.nome,
+      local: imovel.cidade,
+      descricao: imovel.descricao,
+      preco: Number(imovel.preco_por_noite || 0),
+      taxaLimpeza: Number(imovel.taxa_limpeza || 0),
+      checkin: imovel.checkin || '14:00',
+      checkout: imovel.checkout || '11:00',
+      hospedes: Number(imovel.capacidade_maxima || 1),
+      quartos: Number(imovel.quartos || 1),
+      imagens: imovel.imagens || [],
+      comodidades: imovel.comodidades || [],
+    };
+  }
 
-    this.imoveis = Array.from(mapa.values());
+  mapearImovelParaBanco(imovel: any) {
+    return {
+      nome: imovel.titulo,
+      cidade: imovel.local,
+      descricao: imovel.descricao,
+      preco_por_noite: imovel.preco,
+      capacidade_maxima: imovel.hospedes,
+      imagens: imovel.imagens,
+    };
   }
 
   abrirFormularioAdicionar() {
@@ -291,55 +267,23 @@ export class AdminImoveis {
       return;
     }
 
-    const dados = localStorage.getItem('imoveis');
-    const imoveisSalvos = dados ? JSON.parse(dados) : [];
-
-    let novaListaSalva: any[] = [];
+    const imovelParaBanco = this.mapearImovelParaBanco(this.novoImovel);
 
     if (this.modoEdicao && this.imovelEditandoId !== null) {
-      const imovelAtual = this.imoveis.find((imovel) => imovel.id === this.imovelEditandoId);
-
-      const imovelEditado = {
-        id: this.imovelEditandoId,
-        origem: imovelAtual?.origem === 'fixo' ? 'fixo-editado' : 'criado',
-        ...this.novoImovel,
-      };
-
-      const jaExisteNoStorage = imoveisSalvos.some(
-        (imovel: any) => imovel.id === this.imovelEditandoId,
-      );
-
-      if (jaExisteNoStorage) {
-        novaListaSalva = imoveisSalvos.map((imovel: any) => {
-          if (imovel.id === this.imovelEditandoId) {
-            return imovelEditado;
-          }
-
-          return imovel;
-        });
-      } else {
-        novaListaSalva = [...imoveisSalvos, imovelEditado];
-      }
-    } else {
-      const imovel = {
-        id: new Date().getTime(),
-        origem: 'criado',
-        ...this.novoImovel,
-      };
-
-      novaListaSalva = [...imoveisSalvos, imovel];
-    }
-
-    const salvou = this.salvarNoLocalStorage(novaListaSalva);
-
-    if (!salvou) {
-      this.mensagemErro =
-        'Não foi possível salvar. As imagens ainda estão muito pesadas para o navegador.';
+      this.imoveisService.atualizarImovel(this.imovelEditandoId, imovelParaBanco).subscribe({
+        next: () => this.finalizarSalvamento(true),
+        error: (erro) => this.tratarErroSalvar(erro),
+      });
       return;
     }
 
-    const estavaEditando = this.modoEdicao;
+    this.imoveisService.criarImovel(imovelParaBanco).subscribe({
+      next: () => this.finalizarSalvamento(false),
+      error: (erro) => this.tratarErroSalvar(erro),
+    });
+  }
 
+  finalizarSalvamento(estavaEditando: boolean) {
     this.carregarImoveis();
     this.limparFormulario();
     this.mostrarFormulario = false;
@@ -349,49 +293,35 @@ export class AdminImoveis {
     this.mensagemSucesso = estavaEditando
       ? 'Imóvel atualizado com sucesso!'
       : 'Imóvel cadastrado com sucesso!';
+
+    this.cdr.detectChanges();
   }
 
-  salvarNoLocalStorage(lista: any[]) {
-    try {
-      localStorage.setItem('imoveis', JSON.stringify(lista));
-      return true;
-    } catch {
-      return false;
-    }
+  tratarErroSalvar(erro: any) {
+    console.error('Erro ao salvar imóvel:', erro);
+    this.mensagemErro = 'Não foi possível salvar o imóvel. Verifique se o backend está rodando.';
+    this.cdr.detectChanges();
   }
 
   removerImovel(id: number) {
-    const imovel = this.imoveis.find((item) => item.id === id);
-
-    if (!imovel) {
-      return;
-    }
-
-    const mensagem =
-      imovel.origem === 'fixo' || imovel.origem === 'fixo-editado'
-        ? 'Esse é um imóvel padrão. Deseja restaurar ele para o padrão original?'
-        : 'Tem certeza que deseja remover este imóvel?';
-
-    const confirmar = confirm(mensagem);
+    const confirmar = confirm('Tem certeza que deseja remover este imóvel?');
 
     if (!confirmar) {
       return;
     }
 
-    const dados = localStorage.getItem('imoveis');
-    const imoveisSalvos = dados ? JSON.parse(dados) : [];
-
-    const novaLista = imoveisSalvos.filter((item: any) => item.id !== id);
-
-    const salvou = this.salvarNoLocalStorage(novaLista);
-
-    if (salvou) {
-      this.carregarImoveis();
-      this.mensagemSucesso =
-        imovel.origem === 'fixo' || imovel.origem === 'fixo-editado'
-          ? 'Imóvel restaurado para o padrão original.'
-          : 'Imóvel removido com sucesso.';
-    }
+    this.imoveisService.removerImovel(id).subscribe({
+      next: () => {
+        this.carregarImoveis();
+        this.mensagemSucesso = 'Imóvel removido com sucesso.';
+        this.cdr.detectChanges();
+      },
+      error: (erro) => {
+        console.error('Erro ao remover imóvel:', erro);
+        this.mensagemErro = 'Não foi possível remover o imóvel.';
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   limparFormulario() {
@@ -410,31 +340,19 @@ export class AdminImoveis {
     };
   }
 
+  obterTextoOrigem(imovel: any) {
+    return 'Imóvel cadastrado';
+  }
+
+  obterTextoBotaoRemover(imovel: any) {
+    return 'Remover';
+  }
+
   formatarPreco(valor: number) {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(valor || 0);
-  }
-
-  obterTextoOrigem(imovel: any) {
-    if (imovel.origem === 'fixo') {
-      return 'Imóvel padrão';
-    }
-
-    if (imovel.origem === 'fixo-editado') {
-      return 'Imóvel padrão editado';
-    }
-
-    return 'Imóvel cadastrado';
-  }
-
-  obterTextoBotaoRemover(imovel: any) {
-    if (imovel.origem === 'fixo' || imovel.origem === 'fixo-editado') {
-      return 'Desfazer alterações';
-    }
-
-    return 'Remover';
   }
 
   formatarMoeda(valor: number) {

@@ -26,6 +26,7 @@ export class HospedagemCard {
 }
 
   verDetalhes() {
+    console.log('ID do imóvel:', this.hospedagem.id);
     this.router.navigate(['/detalhes', this.hospedagem.id], {
       queryParams: {
         dataEntrada: this.dataEntrada,

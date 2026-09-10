@@ -10,7 +10,7 @@ const app = express();
 const imoveisRoutes = require('./routes/imoveis.routes');
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use('/imoveis', imoveisRoutes);
 app.use('/reservas', reservasRoutes);
 

@@ -19,6 +19,18 @@ export class Imoveis {
     return this.http.get<any>(`${this.imoveisUrl}/${id}`);
   }
 
+  criarImovel(imovel: any): Observable<any> {
+    return this.http.post<any>(this.imoveisUrl, imovel);
+  }
+
+  atualizarImovel(id: number, imovel: any): Observable<any> {
+    return this.http.put<any>(`${this.imoveisUrl}/${id}`, imovel);
+  }
+
+  removerImovel(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.imoveisUrl}/${id}`);
+  }
+
   listarReservasPorImovel(id: number): Observable<any[]> {
     return this.http.get<any[]>(
       `${this.reservasUrl}/imovel/${id}`,

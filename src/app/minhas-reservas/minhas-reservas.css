@@ -61,6 +61,15 @@
   color: #64748b;
 }
 
+.erro-reservas {
+  border-color: #fecaca;
+  background: #fff1f2;
+}
+
+.erro-reservas h2 {
+  color: #991b1b;
+}
+
 .reserva-card {
   border: 1px solid #e5e7eb;
   border-radius: 18px;
@@ -73,6 +82,19 @@
 .reserva-destacada {
   border: 2px solid #2563eb;
   box-shadow: 0 12px 30px rgba(37, 99, 235, 0.18);
+}
+
+.card-pendente {
+  border-color: #fed7aa;
+}
+
+.card-pago {
+  border-color: #bbf7d0;
+}
+
+.card-expirado,
+.card-cancelada {
+  border-color: #fecaca;
 }
 
 .reserva-header {
@@ -110,7 +132,7 @@
   border-radius: 999px;
   font-size: 13px;
   font-weight: 800;
-  text-transform: capitalize;
+  white-space: nowrap;
 }
 
 .pendente {
@@ -123,9 +145,49 @@
   color: #166534;
 }
 
+.expirado {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 .cancelada {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.pagamento-pendente-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid #fed7aa;
+  border-radius: 16px;
+  background: #fff7ed;
+  margin-bottom: 18px;
+}
+
+.pagamento-pendente-card span {
+  display: block;
+  margin-bottom: 6px;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pagamento-pendente-card strong {
+  display: block;
+  font-size: 30px;
+  color: #9a3412;
+  letter-spacing: 1px;
+}
+
+.pagamento-pendente-card p {
+  margin: 0;
+  max-width: 440px;
+  color: #9a3412;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .reserva-info,
@@ -143,12 +205,22 @@
   padding: 14px;
 }
 
+/* Label com ícone + texto lado a lado (calendário, pessoa, telefone, etc.) */
 .reserva-info span,
 .responsavel-info span {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #64748b;
   font-size: 13px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.info-icon {
+  width: 16px;
+  height: 16px;
+  color: #2563eb;
+  flex-shrink: 0;
 }
 
 .reserva-info strong,
@@ -199,22 +271,14 @@
   font-size: 22px;
 }
 
-.prazo-cancelamento {
-  margin: 0 0 14px;
-  padding: 12px;
-  border-radius: 12px;
-  background: #f8fafc;
-  color: #475569;
-  font-weight: 700;
-}
-
 .reserva-acoes {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.whatsapp-btn,
+.pix-btn,
+.cartao-btn,
 .cancelar-reserva-btn {
   height: 46px;
   border: none;
@@ -224,33 +288,29 @@
   cursor: pointer;
 }
 
-.whatsapp-btn {
+.pix-btn {
   background: #22c55e;
 }
 
-.whatsapp-btn:hover {
+.pix-btn:hover {
   background: #16a34a;
 }
 
+.cartao-btn {
+  background: #2563eb;
+}
+
+.cartao-btn:hover {
+  background: #1d4ed8;
+}
+
 .cancelar-reserva-btn {
+  grid-column: 1 / -1;
   background: #ef4444;
 }
 
 .cancelar-reserva-btn:hover {
   background: #dc2626;
-}
-
-.cancelamento-bloqueado {
-  min-height: 46px;
-  border-radius: 12px;
-  background: #f1f5f9;
-  color: #64748b;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 14px;
-  text-align: center;
 }
 
 .status-card {
@@ -264,10 +324,220 @@
   color: #166534;
 }
 
+.expirado-card,
 .cancelada-card {
   background: #fee2e2;
   color: #991b1b;
 }
+
+.hospedes-reserva-box{
+    margin-top:28px;
+}
+
+.hospedes-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:22px;
+}
+
+.hospedes-header h3{
+    margin:0;
+    font-size:24px;
+    color:#0f172a;
+    font-weight:700;
+}
+
+.quantidade-hospedes{
+    background:#dbeafe;
+    color:#2563eb;
+    padding:7px 16px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:700;
+}
+
+.hospede-card{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    background:#ffffff;
+
+    border:1px solid #e5e7eb;
+
+    border-radius:18px;
+
+    padding:22px;
+
+    margin-bottom:16px;
+
+    transition:.25s;
+
+}
+
+.hospede-card:hover{
+
+    border-color:#2563eb;
+
+    box-shadow:0 12px 26px rgba(37,99,235,.12);
+
+    transform:translateY(-2px);
+
+}
+
+.hospede-esquerda{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+}
+
+/* Avatar: cor de fundo padrão + cores alternadas por índice do hóspede */
+.avatar{
+
+    width:58px;
+
+    height:58px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:24px;
+
+}
+
+.avatar-cor-0 { background: #dbeafe; }
+.avatar-cor-1 { background: #dcfce7; }
+.avatar-cor-2 { background: #ffedd5; }
+.avatar-cor-3 { background: #fce7f3; }
+
+.hospede-esquerda h4{
+
+    margin:0 0 8px;
+
+    font-size:19px;
+
+    color:#0f172a;
+
+    font-weight:700;
+
+}
+
+.badge{
+
+    display:inline-block;
+
+    background:#dbeafe;
+
+    color:#2563eb;
+
+    padding:5px 12px;
+
+    border-radius:999px;
+
+    font-size:13px;
+
+    font-weight:700;
+
+}
+
+.badge.crianca{
+
+    background:#ffedd5;
+
+    color:#ea580c;
+
+}
+
+.hospede-direita{
+
+    min-width:180px;
+
+    text-align:right;
+
+}
+
+.hospede-direita span{
+
+    display:block;
+
+    font-size:12px;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+
+    color:#94a3b8;
+
+}
+
+.hospede-direita strong{
+
+    display:block;
+
+    margin-top:6px;
+
+    font-size:18px;
+
+    color:#0f172a;
+
+}
+
+/* Caixa de aviso tracejada: "serão solicitados no check-in" */
+.aviso-checkin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px dashed #93c5fd;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.aviso-checkin .info-icon {
+  color: #1e40af;
+}
+
+.sem-hospedes-adicionais {
+  padding: 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  text-align: center;
+}
+
+.hospedes-reserva-box{
+    animation:fadeIn .35s ease;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
 
 @media (max-width: 700px) {
   .topo-reservas {
@@ -290,6 +560,11 @@
     flex-direction: column;
   }
 
+  .pagamento-pendente-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .reserva-info,
   .responsavel-info {
     grid-template-columns: 1fr;
@@ -298,4 +573,31 @@
   .reserva-acoes {
     grid-template-columns: 1fr;
   }
+
+  .cancelar-reserva-btn {
+    grid-column: auto;
+  }
+
+  .hospede-card{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:18px;
+}
+
+.hospede-direita{
+    width:100%;
+    min-width:100%;
+    text-align:left;
+}
+
+.hospede-esquerda{
+    width:100%;
+}
+
+.hospedes-header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+}
+
 }
