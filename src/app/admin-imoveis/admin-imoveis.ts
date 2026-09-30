@@ -94,6 +94,7 @@ export class AdminImoveis {
       preco_por_noite: imovel.preco,
       capacidade_maxima: imovel.hospedes,
       imagens: imovel.imagens,
+      comodidades: imovel.comodidades,
     };
   }
 
