@@ -505,7 +505,7 @@ export class MinhasReservas implements OnDestroy {
     const tipoDocumento = this.obterTipoDocumento(reserva);
     const documento = this.obterDocumento(reserva);
 
-    const mensagem = `Olá! Quero realizar o pagamento da minha reserva.
+    const mensagem = `Olá Nathália! Gostaria de realizar o pagamento da minha reserva.
 
 Forma de pagamento escolhida: ${tipoPagamento}
 
@@ -522,8 +522,7 @@ Total: ${this.formatarPreco(reserva.total)}
 
 Tempo restante para pagamento: ${this.tempoPagamentoFormatado(reserva)}`;
 
-    const url = `https://wa.me/5511999999999?text=${encodeURIComponent(mensagem)}`;
-
+const url = `https://wa.me/5513982019760?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
   }
 

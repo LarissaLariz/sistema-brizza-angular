@@ -240,9 +240,7 @@ carregarImovelDaApi(id: number) {
         hospedes: Number(imovel.capacidade_maxima),
         quartos: 1,
         taxaLimpeza: 0,
-        comodidades: [
-          { icone: '📶', nome: 'Wi-Fi' }
-        ]
+        comodidades: this.formatarComodidades(imovel.comodidades || [])
       };
 
       console.log('Objeto criado:', this.hospedagemSelecionada);
@@ -1501,7 +1499,7 @@ console.log('Depois do detectChanges:', this.hospedagemSelecionada);
 
     const documento = reserva.responsavelDocumento || 'Não informado';
 
-    const mensagem = `Olá! Quero realizar o pagamento da minha reserva.
+    const mensagem = `Olá Nathália! Gostaria de realizar o pagamento da minha reserva.
 
 Forma de pagamento escolhida: ${tipoPagamento}
 
@@ -1520,7 +1518,7 @@ Total: ${this.formatarPreco(reserva.total)}
 
 Minha reserva está pré-bloqueada por 30 minutos.`;
 
-    const url = `https://wa.me/5511999999999?text=${encodeURIComponent(mensagem)}`;
+const url = `https://wa.me/5513982019760?text=${encodeURIComponent(mensagem)}`;
 
     window.open(url, '_blank');
   }
