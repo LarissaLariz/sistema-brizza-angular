@@ -11,7 +11,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './minhas-reservas.css',
 })
 export class MinhasReservas implements OnDestroy {
-  private apiReservasUrl = 'http://localhost:3000/reservas';
+private apiReservasUrl = 'https://lofts-guaruja-api.onrender.com/reservas';
 
   usuarioLogado: any = null;
   reservas: any[] = [];
