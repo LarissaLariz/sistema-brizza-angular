@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class Imoveis {
-  private imoveisUrl = 'http://localhost:3000/imoveis';
-  private reservasUrl = 'http://localhost:3000/reservas';
+  private imoveisUrl = 'https://lofts-guaruja-api.onrender.com/imoveis';
+private reservasUrl = 'https://lofts-guaruja-api.onrender.com/reservas';
 
   constructor(private http: HttpClient) {}
 
