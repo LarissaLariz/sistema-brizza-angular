@@ -1,3 +1,4 @@
+
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -9,8 +10,18 @@ import { Router } from '@angular/router';
   styleUrl: './admin-home.css',
 })
 export class AdminHome {
-
   constructor(private router: Router) {}
+
+  ngOnInit() {
+    const token = localStorage.getItem('tokenAdmin');
+    const usuarioSalvo = localStorage.getItem('usuario');
+
+    if (!token || !usuarioSalvo) {
+      localStorage.removeItem('tokenAdmin');
+      localStorage.removeItem('usuario');
+      this.router.navigate(['/admin-login']);
+    }
+  }
 
   irParaImoveis() {
     this.router.navigate(['/admin/imoveis']);
@@ -21,8 +32,8 @@ export class AdminHome {
   }
 
   logout() {
+    localStorage.removeItem('tokenAdmin');
     localStorage.removeItem('usuario');
     this.router.navigate(['/admin-login']);
   }
-
 }

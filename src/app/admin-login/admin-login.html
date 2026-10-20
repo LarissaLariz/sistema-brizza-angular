@@ -1,12 +1,32 @@
+
 <div class="login-container">
-  <h1>Login Admin</h1>
+  <h1>Login administrativo</h1>
 
-  <input type="text" placeholder="E-mail" [(ngModel)]="email" />
-  <input type="password" placeholder="Senha" [(ngModel)]="senha" />
+  <form (ngSubmit)="login()">
+    <input
+      type="email"
+      name="email"
+      placeholder="E-mail administrativo"
+      [(ngModel)]="email"
+      autocomplete="username"
+      required
+    />
 
-  @if (erro) {
-    <div class="erro">{{ erro }}</div>
-  }
+    <input
+      type="password"
+      name="senha"
+      placeholder="Senha"
+      [(ngModel)]="senha"
+      autocomplete="current-password"
+      required
+    />
 
-  <button (click)="login()">Entrar</button>
+    @if (erro) {
+      <div class="erro">{{ erro }}</div>
+    }
+
+    <button type="submit" [disabled]="carregando">
+      {{ carregando ? 'Verificando...' : 'Entrar' }}
+    </button>
+  </form>
 </div>

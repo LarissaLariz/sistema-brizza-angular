@@ -1,14 +1,14 @@
+
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Imoveis } from '../services/imoveis';
 
 interface Reserva {
   id?: number;
-
   usuarioEmail?: string;
   usuarioNome?: string;
-
   responsavelNome?: string;
   responsavelEmail?: string;
   responsavelPais?: string;
@@ -16,7 +16,7 @@ interface Reserva {
   responsavelDocumento?: string;
   responsavelCpf?: string;
   responsavelTelefone?: string;
-
+  hospedesAdicionais?: any[];
   imovelId?: number | string;
   titulo?: string;
   dataEntrada?: string;
@@ -66,84 +66,173 @@ export class AdminReservas implements OnInit {
   erroBloqueio = '';
 
   dataHoje = '';
+  carregandoReservas = false;
+  erroReservas = '';
+  carregandoBloqueios = false;
+  salvandoBloqueio = false;
 
-  hospedagensFixas: ImovelOpcao[] = [
-    { id: 1, titulo: 'Golden Beach 158' },
-    { id: 2, titulo: 'Loft no centro' },
-    { id: 3, titulo: 'Loft na serra' },
-  ];
-
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private imoveisService: Imoveis,
+  ) {}
 
   ngOnInit() {
     this.dataHoje = this.gerarDataHoje();
-
     this.carregarReservas();
     this.carregarBloqueiosDatas();
     this.carregarImoveisDisponiveis();
   }
 
-  carregarReservas() {
-    const reservasSalvas = localStorage.getItem('reservas');
-
-    try {
-      this.reservas = reservasSalvas ? JSON.parse(reservasSalvas) : [];
-    } catch {
-      this.reservas = [];
+  private tratarErroAutenticacao(erro: any): boolean {
+    if (erro.status !== 401 && erro.status !== 403) {
+      return false;
     }
 
-    this.reservas.sort((a, b) => {
-      const dataA = a.dataCriacao ? new Date(a.dataCriacao).getTime() : 0;
-      const dataB = b.dataCriacao ? new Date(b.dataCriacao).getTime() : 0;
+    localStorage.removeItem('tokenAdmin');
+    localStorage.removeItem('usuario');
+    this.router.navigate(['/admin-login']);
 
-      return dataB - dataA;
+    return true;
+  }
+
+  carregarReservas() {
+    this.carregandoReservas = true;
+    this.erroReservas = '';
+
+    this.imoveisService.listarReservas().subscribe({
+      next: (resposta: any[]) => {
+        this.reservas = resposta.map((item) => this.normalizarReserva(item));
+
+        this.reservas.sort((a, b) => {
+          const dataA = a.dataCriacao ? new Date(a.dataCriacao).getTime() : 0;
+          const dataB = b.dataCriacao ? new Date(b.dataCriacao).getTime() : 0;
+          return dataB - dataA;
+        });
+
+        this.carregandoReservas = false;
+      },
+      error: (erro) => {
+        this.carregandoReservas = false;
+
+        if (this.tratarErroAutenticacao(erro)) {
+          return;
+        }
+
+        this.erroReservas = 'Não foi possível carregar as reservas do servidor.';
+        alert(this.erroReservas);
+      },
     });
   }
 
-  carregarBloqueiosDatas() {
-    const bloqueiosSalvos = localStorage.getItem('bloqueiosDatas');
+  private normalizarReserva(item: any): Reserva {
+    return {
+      id: item.id,
+      usuarioEmail: item.usuarioEmail ?? item.usuario_email,
+      usuarioNome: item.usuarioNome ?? item.usuario_nome,
+      responsavelNome: item.responsavelNome ?? item.responsavel_nome,
+      responsavelEmail: item.responsavelEmail ?? item.responsavel_email,
+      responsavelPais: item.responsavelPais ?? item.responsavel_pais,
+      responsavelTipoDocumento:
+        item.responsavelTipoDocumento ?? item.responsavel_tipo_documento,
+      responsavelDocumento: item.responsavelDocumento ?? item.responsavel_documento,
+      responsavelCpf: item.responsavelCpf ?? item.responsavel_cpf,
+      responsavelTelefone: item.responsavelTelefone ?? item.responsavel_telefone,
+      hospedesAdicionais: item.hospedesAdicionais ?? item.hospedes_adicionais ?? [],
+      imovelId: item.imovelId ?? item.imovel_id,
+      titulo: item.titulo ?? item.titulo_imovel,
+      dataEntrada: this.normalizarData(item.dataEntrada ?? item.data_entrada),
+      dataSaida: this.normalizarData(item.dataSaida ?? item.data_saida),
+      adultos: Number(item.adultos ?? 0),
+      criancas: Number(item.criancas ?? 0),
+      total: Number(item.total ?? 0),
+      status: item.status,
+      dataCriacao: item.dataCriacao ?? item.criado_em,
+    };
+  }
 
-    try {
-      this.bloqueiosDatas = bloqueiosSalvos ? JSON.parse(bloqueiosSalvos) : [];
-    } catch {
-      this.bloqueiosDatas = [];
+  private normalizarData(data?: string | null): string | undefined {
+    if (!data) {
+      return undefined;
     }
 
+    return data.substring(0, 10);
+  }
+
+  carregarBloqueiosDatas() {
+    this.carregandoBloqueios = true;
+    this.erroBloqueio = '';
+
+    this.imoveisService.listarBloqueios().subscribe({
+      next: (resposta: any[]) => {
+        this.bloqueiosDatas = resposta.map((item) => {
+          const imovelId = item.imovelId ?? item.imovel_id;
+          const imovel = this.imoveisDisponiveis.find(
+            (opcao) => String(opcao.id) === String(imovelId),
+          );
+
+          return {
+            id: Number(item.id),
+            imovelId,
+            titulo: item.titulo ?? item.titulo_imovel ?? imovel?.titulo ?? `Imóvel ${imovelId}`,
+            dataEntrada: this.normalizarData(item.dataEntrada ?? item.data_entrada) || '',
+            dataSaida: this.normalizarData(item.dataSaida ?? item.data_saida) || '',
+            motivo: item.motivo || '',
+            dataCriacao: item.dataCriacao ?? item.criado_em ?? '',
+          };
+        });
+
+        this.ordenarBloqueios();
+        this.carregandoBloqueios = false;
+      },
+      error: (erro) => {
+        this.carregandoBloqueios = false;
+
+        if (this.tratarErroAutenticacao(erro)) {
+          return;
+        }
+
+        this.erroBloqueio = erro.error?.erro || 'Não foi possível carregar os bloqueios do servidor.';
+      },
+    });
+  }
+
+  private ordenarBloqueios() {
     this.bloqueiosDatas.sort((a, b) => {
       const dataA = a.dataEntrada ? new Date(a.dataEntrada + 'T00:00:00').getTime() : 0;
       const dataB = b.dataEntrada ? new Date(b.dataEntrada + 'T00:00:00').getTime() : 0;
-
       return dataA - dataB;
     });
   }
 
   carregarImoveisDisponiveis() {
-    const mapaImoveis = new Map<string, ImovelOpcao>();
+    this.imoveisService.listarImoveis().subscribe({
+      next: (resposta: any[]) => {
+        this.imoveisDisponiveis = resposta
+          .filter((item) => item.id != null)
+          .map((item) => ({
+            id: item.id,
+            titulo: item.titulo ?? item.nome ?? `Imóvel ${item.id}`,
+          }));
 
-    this.hospedagensFixas.forEach((imovel) => {
-      mapaImoveis.set(String(imovel.id), imovel);
-    });
+        this.bloqueiosDatas = this.bloqueiosDatas.map((bloqueio) => {
+          const imovel = this.imoveisDisponiveis.find(
+            (item) => String(item.id) === String(bloqueio.imovelId),
+          );
 
-    const imoveisSalvos = localStorage.getItem('imoveis');
-
-    if (imoveisSalvos) {
-      try {
-        const imoveisAdmin = JSON.parse(imoveisSalvos);
-
-        imoveisAdmin.forEach((imovel: any) => {
-          if (imovel.id && imovel.titulo) {
-            mapaImoveis.set(String(imovel.id), {
-              id: imovel.id,
-              titulo: imovel.titulo,
-            });
-          }
+          return {
+            ...bloqueio,
+            titulo: imovel?.titulo ?? bloqueio.titulo,
+          };
         });
-      } catch {
-        return;
-      }
-    }
+      },
+      error: (erro) => {
+        if (this.tratarErroAutenticacao(erro)) {
+          return;
+        }
 
-    this.imoveisDisponiveis = Array.from(mapaImoveis.values());
+        console.error('Não foi possível carregar os imóveis.', erro);
+      },
+    });
   }
 
   get reservasFiltradas() {
@@ -159,27 +248,45 @@ export class AdminReservas implements OnInit {
   }
 
   marcarComoPaga(reserva: Reserva) {
-    reserva.status = 'pago';
-    this.salvarReservas();
-  }
-
-  cancelarReserva(reserva: Reserva) {
-    const confirmarCancelamento = confirm('Tem certeza que deseja cancelar esta reserva?');
-
-    if (!confirmarCancelamento) {
+    if (!reserva.id || reserva.status === 'pago') {
       return;
     }
 
-    reserva.status = 'cancelada';
-    this.salvarReservas();
+    this.imoveisService.atualizarStatusReserva(reserva.id, 'pago').subscribe({
+      next: (resposta) => {
+        reserva.status = resposta.status;
+      },
+      error: (erro) => {
+        if (this.tratarErroAutenticacao(erro)) {
+          return;
+        }
+
+        alert(erro.error?.erro || 'Não foi possível atualizar o pagamento da reserva.');
+      },
+    });
   }
 
-  salvarReservas() {
-    localStorage.setItem('reservas', JSON.stringify(this.reservas));
-  }
+  cancelarReserva(reserva: Reserva) {
+    const confirmarCancelamento = confirm(
+      'Tem certeza que deseja cancelar esta reserva?',
+    );
 
-  salvarBloqueiosDatas() {
-    localStorage.setItem('bloqueiosDatas', JSON.stringify(this.bloqueiosDatas));
+    if (!confirmarCancelamento || !reserva.id) {
+      return;
+    }
+
+    this.imoveisService.atualizarStatusReserva(reserva.id, 'cancelada').subscribe({
+      next: (resposta) => {
+        reserva.status = resposta.status;
+      },
+      error: (erro) => {
+        if (this.tratarErroAutenticacao(erro)) {
+          return;
+        }
+
+        alert(erro.error?.erro || 'Não foi possível cancelar a reserva.');
+      },
+    });
   }
 
   contarReservasPorStatus(status: string) {
@@ -188,7 +295,6 @@ export class AdminReservas implements OnInit {
 
   gerarDataHoje() {
     const hoje = new Date();
-
     const ano = hoje.getFullYear();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
     const dia = String(hoje.getDate()).padStart(2, '0');
@@ -201,7 +307,7 @@ export class AdminReservas implements OnInit {
       return 'Data não informada';
     }
 
-    return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+    return new Date(data.substring(0, 10) + 'T00:00:00').toLocaleDateString('pt-BR');
   }
 
   formatarTotal(valor?: number) {
@@ -257,7 +363,7 @@ export class AdminReservas implements OnInit {
 
   obterTituloImovelSelecionado() {
     const imovel = this.imoveisDisponiveis.find(
-      (item) => String(item.id) === String(this.bloqueioImovelId)
+      (item) => String(item.id) === String(this.bloqueioImovelId),
     );
 
     return imovel?.titulo || '';
@@ -267,7 +373,7 @@ export class AdminReservas implements OnInit {
     entradaNova: Date,
     saidaNova: Date,
     entradaExistente: Date,
-    saidaExistente: Date
+    saidaExistente: Date,
   ) {
     return entradaNova < saidaExistente && saidaNova > entradaExistente;
   }
@@ -303,7 +409,7 @@ export class AdminReservas implements OnInit {
         entradaNova,
         saidaNova,
         entradaExistente,
-        saidaExistente
+        saidaExistente,
       );
     });
 
@@ -331,7 +437,7 @@ export class AdminReservas implements OnInit {
         entradaNova,
         saidaNova,
         entradaExistente,
-        saidaExistente
+        saidaExistente,
       );
     });
 
@@ -350,18 +456,22 @@ export class AdminReservas implements OnInit {
   montarMensagemConflito(conflito: any) {
     if (conflito.tipo === 'reserva') {
       return `Esse período cruza com uma reserva ${conflito.status} de ${this.formatarData(
-        conflito.dataEntrada
+        conflito.dataEntrada,
       )} até ${this.formatarData(conflito.dataSaida)}.`;
     }
 
     return `Esse período cruza com um bloqueio manual de ${this.formatarData(
-      conflito.dataEntrada
+      conflito.dataEntrada,
     )} até ${this.formatarData(conflito.dataSaida)}.`;
   }
 
   bloquearPeriodoManual() {
     this.erroBloqueio = '';
     this.mensagemBloqueio = '';
+
+    if (this.salvandoBloqueio) {
+      return;
+    }
 
     if (!this.bloqueioImovelId) {
       this.erroBloqueio = 'Selecione o imóvel que deseja bloquear.';
@@ -399,26 +509,51 @@ export class AdminReservas implements OnInit {
       return;
     }
 
-    const novoBloqueio: BloqueioData = {
-      id: new Date().getTime(),
-      imovelId: this.bloqueioImovelId,
-      titulo: this.obterTituloImovelSelecionado(),
+    this.salvandoBloqueio = true;
+
+    this.imoveisService.criarBloqueio({
+      imovelId: Number(this.bloqueioImovelId),
       dataEntrada: this.bloqueioDataEntrada,
       dataSaida: this.bloqueioDataSaida,
       motivo: this.bloqueioMotivo.trim(),
-      dataCriacao: new Date().toISOString(),
-    };
+    }).subscribe({
+      next: (resposta: any) => {
+        const imovelId = resposta.imovelId ?? resposta.imovel_id ?? this.bloqueioImovelId;
+        const imovel = this.imoveisDisponiveis.find(
+          (item) => String(item.id) === String(imovelId),
+        );
 
-    this.bloqueiosDatas.push(novoBloqueio);
-    this.salvarBloqueiosDatas();
-    this.carregarBloqueiosDatas();
+        this.bloqueiosDatas.push({
+          id: Number(resposta.id),
+          imovelId,
+          titulo: imovel?.titulo || this.obterTituloImovelSelecionado(),
+          dataEntrada: this.normalizarData(resposta.dataEntrada ?? resposta.data_entrada) || this.bloqueioDataEntrada,
+          dataSaida: this.normalizarData(resposta.dataSaida ?? resposta.data_saida) || this.bloqueioDataSaida,
+          motivo: resposta.motivo || this.bloqueioMotivo.trim(),
+          dataCriacao: resposta.dataCriacao ?? resposta.criado_em ?? new Date().toISOString(),
+        });
 
-    this.bloqueioImovelId = null;
-    this.bloqueioDataEntrada = '';
-    this.bloqueioDataSaida = '';
-    this.bloqueioMotivo = '';
+        this.ordenarBloqueios();
 
-    this.mensagemBloqueio = 'Período bloqueado com sucesso.';
+        this.bloqueioImovelId = null;
+        this.bloqueioDataEntrada = '';
+        this.bloqueioDataSaida = '';
+        this.bloqueioMotivo = '';
+
+        this.mensagemBloqueio = 'Período bloqueado com sucesso.';
+        this.salvandoBloqueio = false;
+      },
+      error: (erro) => {
+        this.salvandoBloqueio = false;
+
+        if (this.tratarErroAutenticacao(erro)) {
+          return;
+        }
+
+        this.erroBloqueio =
+          erro.error?.erro || 'Não foi possível salvar o bloqueio no banco de dados.';
+      },
+    });
   }
 
   removerBloqueio(bloqueio: BloqueioData) {
@@ -428,10 +563,25 @@ export class AdminReservas implements OnInit {
       return;
     }
 
-    this.bloqueiosDatas = this.bloqueiosDatas.filter((item) => item.id !== bloqueio.id);
-    this.salvarBloqueiosDatas();
-
-    this.mensagemBloqueio = 'Bloqueio removido com sucesso.';
     this.erroBloqueio = '';
+    this.mensagemBloqueio = '';
+
+    this.imoveisService.removerBloqueio(bloqueio.id).subscribe({
+      next: () => {
+        this.bloqueiosDatas = this.bloqueiosDatas.filter(
+          (item) => item.id !== bloqueio.id,
+        );
+
+        this.mensagemBloqueio = 'Bloqueio removido com sucesso.';
+      },
+      error: (erro) => {
+        if (this.tratarErroAutenticacao(erro)) {
+          return;
+        }
+
+        this.erroBloqueio =
+          erro.error?.erro || 'Não foi possível remover o bloqueio do banco de dados.';
+      },
+    });
   }
 }

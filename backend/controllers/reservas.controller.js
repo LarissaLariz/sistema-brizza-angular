@@ -1,3 +1,4 @@
+
 const pool = require('../database/connection');
 
 async function listarReservas(req, res) {
@@ -11,10 +12,7 @@ async function listarReservas(req, res) {
     res.json(resultado.rows);
   } catch (erro) {
     console.error(erro);
-
-    res.status(500).json({
-      erro: 'Erro ao buscar reservas',
-    });
+    res.status(500).json({ erro: 'Erro ao buscar reservas' });
   }
 }
 
@@ -41,10 +39,7 @@ async function listarReservasPorImovel(req, res) {
     res.json(resultado.rows);
   } catch (erro) {
     console.error(erro);
-
-    res.status(500).json({
-      erro: 'Erro ao buscar reservas do imóvel',
-    });
+    res.status(500).json({ erro: 'Erro ao buscar reservas do imóvel' });
   }
 }
 
@@ -69,14 +64,38 @@ async function criarReserva(req, res) {
       hospedesAdicionais,
     } = req.body;
 
+    if (!imovelId || !dataEntrada || !dataSaida || dataSaida <= dataEntrada) {
+      return res.status(400).json({
+        erro: 'Informe o imóvel e um período válido para a reserva.',
+      });
+    }
+
+    const bloqueioConflitante = await pool.query(
+      `
+      SELECT id
+      FROM bloqueios_datas
+      WHERE imovel_id = $1
+        AND $2::date < data_saida
+        AND $3::date > data_entrada
+      LIMIT 1
+      `,
+      [imovelId, dataEntrada, dataSaida],
+    );
+
+    if (bloqueioConflitante.rows.length > 0) {
+      return res.status(409).json({
+        erro: 'Este imóvel está bloqueado para o período selecionado.',
+      });
+    }
+
     const reservaConflitante = await pool.query(
       `
-      SELECT *
+      SELECT id
       FROM reservas
       WHERE imovel_id = $1
         AND status IN ('pendente', 'pago')
-        AND $2 < data_saida
-        AND $3 > data_entrada
+        AND $2::date < data_saida
+        AND $3::date > data_entrada
       LIMIT 1
       `,
       [imovelId, dataEntrada, dataSaida],
@@ -84,7 +103,7 @@ async function criarReserva(req, res) {
 
     if (reservaConflitante.rows.length > 0) {
       return res.status(409).json({
-        erro: 'Já existe uma reserva para este imóvel nessas datas',
+        erro: 'Já existe uma reserva para este imóvel nessas datas.',
       });
     }
 
@@ -136,9 +155,42 @@ async function criarReserva(req, res) {
     res.status(201).json(resultado.rows[0]);
   } catch (erro) {
     console.error(erro);
+    res.status(500).json({ erro: 'Erro ao criar reserva' });
+  }
+}
 
-    res.status(500).json({
-      erro: 'Erro ao criar reserva',
+async function atualizarStatusReserva(req, res) {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['pendente', 'pago', 'cancelada'].includes(status)) {
+      return res.status(400).json({
+        erro: 'Status de reserva inválido.',
+      });
+    }
+
+    const resultado = await pool.query(
+      `
+      UPDATE reservas
+      SET status = $1
+      WHERE id = $2
+      RETURNING *
+      `,
+      [status, id],
+    );
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({
+        erro: 'Reserva não encontrada.',
+      });
+    }
+
+    return res.json(resultado.rows[0]);
+  } catch (erro) {
+    console.error(erro);
+    return res.status(500).json({
+      erro: 'Erro ao atualizar status da reserva.',
     });
   }
 }
@@ -147,4 +199,5 @@ module.exports = {
   listarReservas,
   listarReservasPorImovel,
   criarReserva,
+  atualizarStatusReserva,
 };

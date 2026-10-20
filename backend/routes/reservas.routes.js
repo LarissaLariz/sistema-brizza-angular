@@ -1,16 +1,29 @@
+
 const express = require('express');
 const router = express.Router();
+
+const authAdmin = require('../middleware/auth-admin');
 
 const {
   listarReservas,
   listarReservasPorImovel,
   criarReserva,
+  atualizarStatusReserva,
 } = require('../controllers/reservas.controller');
 
-router.get('/', listarReservas);
+const {
+  listarBloqueios,
+  criarBloqueio,
+  removerBloqueio,
+} = require('../controllers/bloqueios.controller');
 
+router.get('/', authAdmin, listarReservas);
 router.get('/imovel/:id', listarReservasPorImovel);
-
 router.post('/', criarReserva);
+router.patch('/:id/status', authAdmin, atualizarStatusReserva);
+
+router.get('/bloqueios', authAdmin, listarBloqueios);
+router.post('/bloqueios', authAdmin, criarBloqueio);
+router.delete('/bloqueios/:id', authAdmin, removerBloqueio);
 
 module.exports = router;

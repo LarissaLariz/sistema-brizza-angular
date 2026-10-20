@@ -1,16 +1,20 @@
-const reservasRoutes = require('./routes/reservas.routes');
-const express = require('express');
-const cors = require('cors');
+
 require('dotenv').config();
 
-const pool = require('./database/connection'); 
+const express = require('express');
+const cors = require('cors');
+
+const pool = require('./database/connection');
+const imoveisRoutes = require('./routes/imoveis.routes');
+const reservasRoutes = require('./routes/reservas.routes');
+const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 
-const imoveisRoutes = require('./routes/imoveis.routes');
-
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+app.use('/auth', authRoutes);
 app.use('/imoveis', imoveisRoutes);
 app.use('/reservas', reservasRoutes);
 
@@ -20,16 +24,17 @@ app.get('/', async (req, res) => {
 
     res.json({
       mensagem: 'Banco conectado com sucesso 🚀',
-      data: resultado.rows[0]
+      data: resultado.rows[0],
     });
   } catch (erro) {
     console.error(erro);
 
     res.status(500).json({
-      erro: 'Falha ao conectar ao banco'
+      erro: 'Falha ao conectar ao banco',
     });
   }
 });
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

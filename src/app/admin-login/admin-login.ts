@@ -1,6 +1,8 @@
+
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-admin-login',
@@ -10,28 +12,43 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './admin-login.css',
 })
 export class AdminLogin {
-
   email = '';
   senha = '';
   erro = '';
+  carregando = false;
 
-  constructor(private router: Router) {}
+private apiUrl = 'https://lofts-guaruja-api.onrender.com/auth/admin-login';
+
+constructor(
+    private router: Router,
+    private http: HttpClient,
+  ) {}
 
   login() {
-    if (this.email === 'admin@brizza.com' && this.senha === '123456') {
+    this.erro = '';
 
-      const usuario = {
-        email: this.email,
-        tipo: 'admin'
-      };
-
-      localStorage.setItem('usuario', JSON.stringify(usuario));
-
-      this.router.navigate(['/admin']);
-
-    } else {
-      this.erro = 'Login inválido';
+    if (!this.email.trim() || !this.senha) {
+      this.erro = 'Informe seu e-mail e sua senha.';
+      return;
     }
-  }
 
+    this.carregando = true;
+
+    this.http.post<any>(this.apiUrl, {
+      email: this.email.trim(),
+      senha: this.senha,
+    }).subscribe({
+      next: (resposta) => {
+        localStorage.setItem('tokenAdmin', resposta.token);
+        localStorage.setItem('usuario', JSON.stringify(resposta.usuario));
+
+        this.carregando = false;
+        this.router.navigate(['/admin']);
+      },
+      error: (erro) => {
+        this.carregando = false;
+        this.erro = erro.error?.erro || 'Não foi possível entrar. Tente novamente.';
+      },
+    });
+  }
 }
