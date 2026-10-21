@@ -217,11 +217,35 @@ export class AdminImoveis {
     this.novoImovel.imagens = this.novoImovel.imagens.filter((_, posicao) => posicao !== index);
   }
 
-    definirCapa(index: number) {
-    const imagens = [...this.novoImovel.imagens];
-    const [capa] = imagens.splice(index, 1);
+     indiceArrastado: number | null = null;
+  indiceAlvo: number | null = null;
 
-    this.novoImovel.imagens = [capa, ...imagens];
+  iniciarArraste(event: DragEvent, index: number) {
+    this.indiceArrastado = index;
+    event.dataTransfer?.setData('text/plain', String(index));
+  }
+
+  permitirSoltar(event: DragEvent, index: number) {
+    event.preventDefault();
+    this.indiceAlvo = index;
+  }
+
+  soltarImagem(event: DragEvent, destino: number) {
+    event.preventDefault();
+
+    if (this.indiceArrastado !== null && this.indiceArrastado !== destino) {
+      const imagens = [...this.novoImovel.imagens];
+      const [movida] = imagens.splice(this.indiceArrastado, 1);
+      imagens.splice(destino, 0, movida);
+      this.novoImovel.imagens = imagens;
+    }
+
+    this.finalizarArraste();
+  }
+
+  finalizarArraste() {
+    this.indiceArrastado = null;
+    this.indiceAlvo = null;
     this.cdr.detectChanges();
   }
 

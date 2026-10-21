@@ -126,10 +126,20 @@
 
       @if (novoImovel.imagens.length > 0) {
         <p class="contador-imagens">{{ novoImovel.imagens.length }} imagem(ns) selecionada(s)</p>
+        <p class="dica-capa">Arraste as fotos para reordenar. A primeira é a capa.</p>
 
         <div class="preview-imagens">
           @for (imagem of novoImovel.imagens; track $index) {
-            <div class="preview-item">
+            <div
+              class="preview-item"
+              [class.arrastando]="indiceArrastado === $index"
+              [class.alvo]="indiceAlvo === $index && indiceArrastado !== $index"
+              draggable="true"
+              (dragstart)="iniciarArraste($event, $index)"
+              (dragover)="permitirSoltar($event, $index)"
+              (drop)="soltarImagem($event, $index)"
+              (dragend)="finalizarArraste()"
+            >
               <img [src]="imagem" alt="Foto do imóvel" />
 
               <button type="button" class="remover-imagem-btn" (click)="removerImagem($index)">
@@ -138,10 +148,6 @@
 
               @if ($index === 0) {
                 <span class="selo-capa">Capa</span>
-              } @else {
-                <button type="button" class="definir-capa-btn" (click)="definirCapa($index)">
-                  Definir capa
-                </button>
               }
             </div>
           }
