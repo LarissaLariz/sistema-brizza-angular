@@ -35,56 +35,53 @@ export class Login {
     });
   }
 
-async loginGoogle() {
-  try {
-    const usuario = await this.firebaseService.loginComGoogle();
+  async loginGoogle() {
+    try {
+      const usuario = await this.firebaseService.loginComGoogle();
 
-    localStorage.setItem(
-      'usuarioLogado',
-      JSON.stringify(usuario)
-    );
+      localStorage.setItem(
+        'usuarioLogado',
+        JSON.stringify({ nome: usuario.displayName || '', email: usuario.email || '' })
+      );
+
+      this.redirecionarAposLogin();
+    } catch (error) {
+      this.erroLogin = 'Não foi possível entrar com Google.';
+      console.error(error);
+    }
+  }
+
+  async login() {
+    try {
+      const usuario = await this.firebaseService.loginComEmail(this.email, this.senha);
+
+      localStorage.setItem(
+        'usuarioLogado',
+        JSON.stringify({ nome: usuario.displayName || '', email: usuario.email || '' })
+      );
+
+      this.erroLogin = '';
+      this.redirecionarAposLogin();
+    } catch (error) {
+      this.erroLogin = 'E-mail ou senha inválidos';
+      console.error(error);
+    }
+  }
+
+  redirecionarAposLogin() {
+    if (this.idHospedagem) {
+      this.router.navigate([`/detalhes/${this.idHospedagem}`], {
+        queryParams: {
+          dataEntrada: this.dataEntrada,
+          dataSaida: this.dataSaida,
+          adultos: this.adultos,
+          criancas: this.criancas,
+        },
+      });
+      return;
+    }
 
     this.router.navigate(['/home']);
-
-  } catch (error) {
-    this.erroLogin = 'Não foi possível entrar com Google.';
-    console.error(error);
-  }
-}
-
-  login() {
-    const usuarioSalvo = localStorage.getItem('usuario');
-
-    if (!usuarioSalvo) {
-      this.erroLogin = 'Nenhum usuário cadastrado';
-      return;
-    }
-
-    const usuario = JSON.parse(usuarioSalvo);
-
-    if (this.email === usuario.email && this.senha === usuario.senha) {
-      this.erroLogin = '';
-
-      localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
-
-      if (this.idHospedagem) {
-        this.router.navigate([`/detalhes/${this.idHospedagem}`], {
-          queryParams: {
-            dataEntrada: this.dataEntrada,
-            dataSaida: this.dataSaida,
-            adultos: this.adultos,
-            criancas: this.criancas,
-          },
-        });
-
-        return;
-      }
-
-      this.router.navigate(['/home']);
-      return;
-    }
-
-    this.erroLogin = 'E-mail ou senha inválidos';
   }
 
   irParaCadastro() {

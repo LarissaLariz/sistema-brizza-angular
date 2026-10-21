@@ -2,6 +2,7 @@ import { Component, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { FirebaseService } from '../firebase';
 
 @Component({
   selector: 'app-minhas-reservas',
@@ -27,6 +28,7 @@ private apiReservasUrl = 'https://lofts-guaruja-api.onrender.com/reservas';
     private route: ActivatedRoute,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
+    private firebaseService: FirebaseService,
   ) {
     const usuario = localStorage.getItem('usuarioLogado');
 
@@ -54,11 +56,17 @@ private apiReservasUrl = 'https://lofts-guaruja-api.onrender.com/reservas';
     }
   }
 
-  carregarReservas() {
+    async carregarReservas() {
     this.carregandoReservas = true;
     this.erroReservas = '';
 
-    this.http.get<any[]>(this.apiReservasUrl).subscribe({
+    const token = await this.firebaseService.obterToken();
+
+    this.http
+      .get<any[]>(`${this.apiReservasUrl}/minhas`, {
+        headers: { Authorization: `Bearer ${token || ''}` },
+      })
+      .subscribe({
       next: (reservasApi) => {
         const reservasBackend = reservasApi.map((reserva) =>
           this.montarReservaVindaDoBackend(reserva),

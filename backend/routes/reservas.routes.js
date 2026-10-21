@@ -1,11 +1,12 @@
-
 const express = require('express');
 const router = express.Router();
 
 const authAdmin = require('../middleware/auth-admin');
+const authCliente = require('../middleware/auth-cliente');
 
 const {
   listarReservas,
+  listarMinhasReservas,
   listarReservasPorImovel,
   criarReserva,
   atualizarStatusReserva,
@@ -18,6 +19,7 @@ const {
 } = require('../controllers/bloqueios.controller');
 
 router.get('/', authAdmin, listarReservas);
+router.get('/minhas', authCliente, listarMinhasReservas);
 router.get('/imovel/:id', listarReservasPorImovel);
 router.post('/', criarReserva);
 router.patch('/:id/status', authAdmin, atualizarStatusReserva);

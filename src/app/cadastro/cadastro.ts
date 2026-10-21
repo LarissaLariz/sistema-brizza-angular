@@ -26,7 +26,6 @@ export class Cadastro {
   adultos = 0;
   criancas = 0;
 
-
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -41,53 +40,30 @@ export class Cadastro {
     });
   }
 
-
   async cadastroGoogle() {
     this.erroCadastro = '';
 
     try {
       const usuarioGoogle = await this.firebaseService.loginComGoogle();
 
-      const usuario = {
-        id: usuarioGoogle.uid,
-        nome: usuarioGoogle.displayName,
-        email: usuarioGoogle.email,
-      };
+      localStorage.setItem(
+        'usuarioLogado',
+        JSON.stringify({
+          nome: usuarioGoogle.displayName || '',
+          email: usuarioGoogle.email || '',
+        }),
+      );
 
-
-      localStorage.setItem('usuario', JSON.stringify(usuario));
-      localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
-
-
-      if (this.idHospedagem) {
-        this.router.navigate([`/detalhes/${this.idHospedagem}`], {
-          queryParams: {
-            dataEntrada: this.dataEntrada,
-            dataSaida: this.dataSaida,
-            adultos: this.adultos,
-            criancas: this.criancas,
-          },
-        });
-
-        return;
-      }
-
-
-      this.router.navigate(['/home']);
-
-
+      this.redirecionarAposCadastro();
     } catch (erro) {
       console.error('Erro no cadastro com Google:', erro);
 
-      this.erroCadastro =
-        'Não foi possível realizar o cadastro com Google.';
+      this.erroCadastro = 'Não foi possível realizar o cadastro com Google.';
     }
   }
 
-
-  criarCadastro() {
+  async criarCadastro() {
     this.erroCadastro = '';
-
 
     if (
       !this.nome ||
@@ -96,83 +72,73 @@ export class Cadastro {
       !this.confirmarSenha ||
       !this.aceitouTermos
     ) {
-      this.erroCadastro =
-        'Campos obrigatórios. Preencha todos os campos marcados com *.';
-
+      this.erroCadastro = 'Campos obrigatórios. Preencha todos os campos marcados com *.';
       return;
     }
-
 
     if (!this.emailValido(this.email)) {
       this.erroCadastro = 'Digite um e-mail válido.';
-
       return;
     }
-
 
     if (this.senha.length < 6) {
-      this.erroCadastro =
-        'A senha deve ter pelo menos 6 caracteres.';
-
+      this.erroCadastro = 'A senha deve ter pelo menos 6 caracteres.';
       return;
     }
-
 
     if (this.senha !== this.confirmarSenha) {
-      this.erroCadastro =
-        'As senhas não são iguais.';
-
+      this.erroCadastro = 'As senhas não são iguais.';
       return;
     }
 
-
-    const usuario = {
-      id: new Date().getTime(),
-      nome: this.nome,
-      email: this.email,
-      senha: this.senha,
-    };
-
-
-    localStorage.setItem(
-      'usuario',
-      JSON.stringify(usuario)
-    );
-
-    localStorage.setItem(
-      'usuarioLogado',
-      JSON.stringify(usuario)
-    );
-
-
-    if (this.idHospedagem) {
-
-      this.router.navigate(
-        [`/detalhes/${this.idHospedagem}`],
-        {
-          queryParams: {
-            dataEntrada: this.dataEntrada,
-            dataSaida: this.dataSaida,
-            adultos: this.adultos,
-            criancas: this.criancas,
-          },
-        }
+    try {
+      const usuario = await this.firebaseService.cadastrarComEmail(
+        this.nome,
+        this.email,
+        this.senha,
       );
 
+      localStorage.setItem(
+        'usuarioLogado',
+        JSON.stringify({
+          nome: usuario.displayName || this.nome,
+          email: usuario.email || this.email,
+        }),
+      );
+
+      this.redirecionarAposCadastro();
+    } catch (erro: any) {
+      console.error('Erro no cadastro:', erro);
+
+      if (erro?.code === 'auth/email-already-in-use') {
+        this.erroCadastro = 'Este e-mail já está cadastrado.';
+      } else {
+        this.erroCadastro = 'Não foi possível realizar o cadastro.';
+      }
+    }
+  }
+
+  redirecionarAposCadastro() {
+    if (this.idHospedagem) {
+      this.router.navigate([`/detalhes/${this.idHospedagem}`], {
+        queryParams: {
+          dataEntrada: this.dataEntrada,
+          dataSaida: this.dataSaida,
+          adultos: this.adultos,
+          criancas: this.criancas,
+        },
+      });
       return;
     }
-
 
     this.router.navigate(['/home']);
   }
-
 
   emailValido(email: string): boolean {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     return regex.test(email);
   }
-
 
   irParaLogin() {
     this.router.navigate(['/login'], {

@@ -195,8 +195,28 @@ async function atualizarStatusReserva(req, res) {
   }
 }
 
+async function listarMinhasReservas(req, res) {
+  try {
+    const resultado = await pool.query(
+      `
+      SELECT *
+      FROM reservas
+      WHERE LOWER(usuario_email) = LOWER($1)
+      ORDER BY criado_em DESC
+      `,
+      [req.cliente.email],
+    );
+
+    res.json(resultado.rows);
+  } catch (erro) {
+    console.error(erro);
+    res.status(500).json({ erro: 'Erro ao buscar suas reservas' });
+  }
+}
+
 module.exports = {
   listarReservas,
+  listarMinhasReservas,
   listarReservasPorImovel,
   criarReserva,
   atualizarStatusReserva,
