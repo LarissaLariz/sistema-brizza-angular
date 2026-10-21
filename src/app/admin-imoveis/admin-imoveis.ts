@@ -217,6 +217,14 @@ export class AdminImoveis {
     this.novoImovel.imagens = this.novoImovel.imagens.filter((_, posicao) => posicao !== index);
   }
 
+    definirCapa(index: number) {
+    const imagens = [...this.novoImovel.imagens];
+    const [capa] = imagens.splice(index, 1);
+
+    this.novoImovel.imagens = [capa, ...imagens];
+    this.cdr.detectChanges();
+  }
+
   alterarComodidade(comodidade: string, event: Event) {
     const input = event.target as HTMLInputElement;
 

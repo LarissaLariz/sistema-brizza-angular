@@ -135,6 +135,14 @@
               <button type="button" class="remover-imagem-btn" (click)="removerImagem($index)">
                 ×
               </button>
+
+              @if ($index === 0) {
+                <span class="selo-capa">Capa</span>
+              } @else {
+                <button type="button" class="definir-capa-btn" (click)="definirCapa($index)">
+                  Definir capa
+                </button>
+              }
             </div>
           }
         </div>
