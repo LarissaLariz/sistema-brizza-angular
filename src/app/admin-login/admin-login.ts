@@ -17,7 +17,7 @@ export class AdminLogin {
   erro = '';
   carregando = false;
 
-private apiUrl = 'https://hospeda-guaruja-api.onrender.com/auth/admin-login';
+private apiUrl = 'https://lofts-guaruja-api.onrender.com/auth/admin-login';
 
 constructor(
     private router: Router,
