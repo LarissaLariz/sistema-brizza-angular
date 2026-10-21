@@ -12,7 +12,7 @@ import { FirebaseService } from '../firebase';
   styleUrl: './minhas-reservas.css',
 })
 export class MinhasReservas implements OnDestroy {
-private apiReservasUrl = 'https://lofts-guaruja-api.onrender.com/reservas';
+private apiReservasUrl = 'https://hospeda-guaruja-api.onrender.com/reservas';
 
   usuarioLogado: any = null;
   reservas: any[] = [];

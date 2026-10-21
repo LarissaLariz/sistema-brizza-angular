@@ -7,8 +7,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class Imoveis {
-  private imoveisUrl = 'https://lofts-guaruja-api.onrender.com/imoveis';
-  private reservasUrl = 'https://lofts-guaruja-api.onrender.com/reservas';
+  private imoveisUrl = 'https://hospeda-guaruja-api.onrender.com/imoveis';
+  private reservasUrl = 'https://hospeda-guaruja-api.onrender.com/reservas';
   private bloqueiosUrl = `${this.reservasUrl}/bloqueios`;
 
   constructor(private http: HttpClient) {}
