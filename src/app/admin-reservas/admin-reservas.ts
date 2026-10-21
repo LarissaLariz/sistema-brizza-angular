@@ -1,6 +1,5 @@
-
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Imoveis } from '../services/imoveis';
@@ -74,6 +73,7 @@ export class AdminReservas implements OnInit {
   constructor(
     private router: Router,
     private imoveisService: Imoveis,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -110,9 +110,11 @@ export class AdminReservas implements OnInit {
         });
 
         this.carregandoReservas = false;
+        this.cdr.markForCheck();
       },
       error: (erro) => {
         this.carregandoReservas = false;
+        this.cdr.markForCheck();
 
         if (this.tratarErroAutenticacao(erro)) {
           return;
@@ -183,9 +185,11 @@ export class AdminReservas implements OnInit {
 
         this.ordenarBloqueios();
         this.carregandoBloqueios = false;
+        this.cdr.markForCheck();
       },
       error: (erro) => {
         this.carregandoBloqueios = false;
+        this.cdr.markForCheck();
 
         if (this.tratarErroAutenticacao(erro)) {
           return;
@@ -224,6 +228,8 @@ export class AdminReservas implements OnInit {
             titulo: imovel?.titulo ?? bloqueio.titulo,
           };
         });
+
+        this.cdr.markForCheck();
       },
       error: (erro) => {
         if (this.tratarErroAutenticacao(erro)) {
@@ -255,6 +261,7 @@ export class AdminReservas implements OnInit {
     this.imoveisService.atualizarStatusReserva(reserva.id, 'pago').subscribe({
       next: (resposta) => {
         reserva.status = resposta.status;
+        this.cdr.markForCheck();
       },
       error: (erro) => {
         if (this.tratarErroAutenticacao(erro)) {
@@ -278,6 +285,7 @@ export class AdminReservas implements OnInit {
     this.imoveisService.atualizarStatusReserva(reserva.id, 'cancelada').subscribe({
       next: (resposta) => {
         reserva.status = resposta.status;
+        this.cdr.markForCheck();
       },
       error: (erro) => {
         if (this.tratarErroAutenticacao(erro)) {
@@ -542,9 +550,11 @@ export class AdminReservas implements OnInit {
 
         this.mensagemBloqueio = 'Período bloqueado com sucesso.';
         this.salvandoBloqueio = false;
+        this.cdr.markForCheck();
       },
       error: (erro) => {
         this.salvandoBloqueio = false;
+        this.cdr.markForCheck();
 
         if (this.tratarErroAutenticacao(erro)) {
           return;
@@ -573,6 +583,7 @@ export class AdminReservas implements OnInit {
         );
 
         this.mensagemBloqueio = 'Bloqueio removido com sucesso.';
+        this.cdr.markForCheck();
       },
       error: (erro) => {
         if (this.tratarErroAutenticacao(erro)) {
