@@ -46,15 +46,16 @@ async function buscarImovelPorId(req, res) {
 
 async function criarImovel(req, res) {
   try {
-const {
-  nome,
-  cidade,
-  descricao,
-  preco_por_noite,
-  capacidade_maxima,
-  imagens,
-  comodidades
-} = req.body;
+    const {
+      nome,
+      cidade,
+      descricao,
+      preco_por_noite,
+      capacidade_maxima,
+      imagens,
+      comodidades,
+    } = req.body;
+
     if (!nome || !cidade || !descricao || !preco_por_noite || !capacidade_maxima) {
       return res.status(400).json({
         erro: 'Campos obrigatórios: nome, cidade, descricao, preco_por_noite, capacidade_maxima',
@@ -62,18 +63,19 @@ const {
     }
 
     const resultado = await pool.query(
-      `INSERT INTO imoveis (nome, cidade, descricao, preco_por_noite, capacidade_maxima, imagens, comodidades, ativo) 
- VALUES ($1, $2, $3, $4, $5, $6, $7, true) 
- RETURNING *`
-[
-  nome,
-  cidade,
-  descricao,
-  preco_por_noite,
-  capacidade_maxima,
-  JSON.stringify(imagens || []),
-  JSON.stringify(comodidades || [])
-]    );
+      `INSERT INTO imoveis (nome, cidade, descricao, preco_por_noite, capacidade_maxima, imagens, comodidades, ativo)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+       RETURNING *`,
+      [
+        nome,
+        cidade,
+        descricao,
+        preco_por_noite,
+        capacidade_maxima,
+        JSON.stringify(imagens || []),
+        JSON.stringify(comodidades || []),
+      ]
+    );
 
     res.status(201).json(resultado.rows[0]);
   } catch (erro) {
@@ -90,9 +92,10 @@ async function atualizarImovel(req, res) {
     const { id } = req.params;
     const { nome, cidade, descricao, preco_por_noite, capacidade_maxima, imagens, comodidades } = req.body;
 
-        const resultado = await pool.query(
-      `INSERT INTO imoveis (nome, cidade, descricao, preco_por_noite, capacidade_maxima, imagens, comodidades, ativo)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+    const resultado = await pool.query(
+      `UPDATE imoveis
+       SET nome = $1, cidade = $2, descricao = $3, preco_por_noite = $4, capacidade_maxima = $5, imagens = $6, comodidades = $7
+       WHERE id = $8
        RETURNING *`,
       [
         nome,
@@ -102,6 +105,7 @@ async function atualizarImovel(req, res) {
         capacidade_maxima,
         JSON.stringify(imagens || []),
         JSON.stringify(comodidades || []),
+        id,
       ]
     );
 
