@@ -10,6 +10,10 @@
     </button>
   </div>
 
+  @if (mensagemSucesso && !mostrarFormulario) {
+    <p class="mensagem-sucesso">{{ mensagemSucesso }}</p>
+  }
+
   @if (mostrarFormulario) {
     <section class="form-card" id="formulario-imovel">
       <div class="form-header">

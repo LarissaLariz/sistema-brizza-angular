@@ -284,7 +284,7 @@ export class AdminImoveis {
     });
   }
 
-  finalizarSalvamento(estavaEditando: boolean) {
+   finalizarSalvamento(estavaEditando: boolean) {
     this.carregarImoveis();
     this.limparFormulario();
     this.mostrarFormulario = false;
@@ -296,6 +296,13 @@ export class AdminImoveis {
       : 'Imóvel cadastrado com sucesso!';
 
     this.cdr.detectChanges();
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    setTimeout(() => {
+      this.mensagemSucesso = '';
+      this.cdr.detectChanges();
+    }, 5000);
   }
 
   tratarErroSalvar(erro: any) {
