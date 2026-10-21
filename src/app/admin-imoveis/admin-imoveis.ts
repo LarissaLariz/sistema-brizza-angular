@@ -20,6 +20,9 @@ export class AdminImoveis {
   mensagemErro = '';
   mensagemSucesso = '';
 
+  indiceArrastado: number | null = null;
+  indiceAlvo: number | null = null;
+
   bairrosDisponiveis = ['Pitangueiras', 'Enseada', 'Astúrias', 'Tombo', 'Guaiúba', 'Centro'];
 
   comodidadesDisponiveis = [
@@ -217,9 +220,6 @@ export class AdminImoveis {
     this.novoImovel.imagens = this.novoImovel.imagens.filter((_, posicao) => posicao !== index);
   }
 
-     indiceArrastado: number | null = null;
-  indiceAlvo: number | null = null;
-
   iniciarArraste(event: DragEvent, index: number) {
     this.indiceArrastado = index;
     event.dataTransfer?.setData('text/plain', String(index));
@@ -304,20 +304,29 @@ export class AdminImoveis {
 
     if (this.modoEdicao && this.imovelEditandoId !== null) {
       this.imoveisService.atualizarImovel(this.imovelEditandoId, imovelParaBanco).subscribe({
-        next: () => this.finalizarSalvamento(true),
+        next: (resposta: any) => this.finalizarSalvamento(true, resposta),
         error: (erro) => this.tratarErroSalvar(erro),
       });
       return;
     }
 
     this.imoveisService.criarImovel(imovelParaBanco).subscribe({
-      next: () => this.finalizarSalvamento(false),
+      next: (resposta: any) => this.finalizarSalvamento(false, resposta),
       error: (erro) => this.tratarErroSalvar(erro),
     });
   }
 
-   finalizarSalvamento(estavaEditando: boolean) {
-    this.carregarImoveis();
+  finalizarSalvamento(estavaEditando: boolean, resposta?: any) {
+    if (resposta && resposta.id) {
+      const salvo = this.mapearImovelDoBanco(resposta);
+
+      this.imoveis = estavaEditando
+        ? this.imoveis.map((item) => (item.id === salvo.id ? salvo : item))
+        : [...this.imoveis, salvo];
+    } else {
+      this.carregarImoveis();
+    }
+
     this.limparFormulario();
     this.mostrarFormulario = false;
     this.modoEdicao = false;
@@ -352,7 +361,7 @@ export class AdminImoveis {
 
     this.imoveisService.removerImovel(id).subscribe({
       next: () => {
-        this.carregarImoveis();
+        this.imoveis = this.imoveis.filter((item) => item.id !== id);
         this.mensagemSucesso = 'Imóvel removido com sucesso.';
         this.cdr.detectChanges();
       },
