@@ -178,8 +178,10 @@
         <p class="mensagem-sucesso">{{ mensagemSucesso }}</p>
       }
 
-      <button type="button" class="salvar-btn" (click)="salvarImovel()">
-        @if (modoEdicao) {
+      <button type="button" class="salvar-btn" [disabled]="salvando" (click)="salvarImovel()">
+        @if (salvando) {
+          <span class="spinner-botao"></span> Salvando...
+        } @else if (modoEdicao) {
           Salvar alterações
         } @else {
           Adicionar imóvel
@@ -248,4 +250,14 @@
       </div>
     }
   </section>
+
+  @if (salvando) {
+    <div class="overlay-salvando">
+      <div class="caixa-salvando">
+        <div class="spinner-grande"></div>
+        <strong>{{ modoEdicao ? 'Salvando alterações...' : 'Cadastrando imóvel...' }}</strong>
+        <span>Enviando as fotos, pode levar alguns segundos.</span>
+      </div>
+    </div>
+  }
 </div>

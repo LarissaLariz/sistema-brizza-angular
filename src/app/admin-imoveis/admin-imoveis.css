@@ -218,6 +218,7 @@
   position: relative;
   width: 112px;
   height: 78px;
+  cursor: grab;
 }
 
 .preview-item img {
@@ -226,6 +227,34 @@
   object-fit: cover;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
+  pointer-events: none;
+}
+
+.preview-item.arrastando {
+  opacity: 0.4;
+}
+
+.preview-item.alvo {
+  outline: 2px dashed #2563eb;
+  outline-offset: 3px;
+}
+
+.selo-capa {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dica-capa {
+  margin: 4px 0 8px;
+  font-size: 13px;
+  color: #6b7280;
 }
 
 .remover-imagem-btn {
@@ -297,6 +326,11 @@
   color: #ffffff;
   font-weight: 800;
   cursor: pointer;
+}
+
+.salvar-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .imovel-card {
@@ -400,6 +434,66 @@
   border: 1px solid #cbd5e1;
 }
 
+.spinner-botao {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: -3px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+.overlay-salvando {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+}
+
+.caixa-salvando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 40px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+  text-align: center;
+}
+
+.caixa-salvando strong {
+  font-size: 18px;
+  color: #111827;
+}
+
+.caixa-salvando span {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.spinner-grande {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #dbeafe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 850px) {
   .form-card,
   .lista-card {
@@ -451,56 +545,4 @@
     width: 100%;
     height: 190px;
   }
-
-  .acoes-card {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-  }
-
-  .editar-btn,
-  .remover-btn {
-    height: 34px;
-    padding: 0 14px;
-    border: none;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 800;
-    cursor: pointer;
-  }
-}
-.preview-item {
-  position: relative;
-  cursor: grab;
-}
-
-.preview-item img {
-  pointer-events: none;
-}
-
-.preview-item.arrastando {
-  opacity: 0.4;
-}
-
-.preview-item.alvo {
-  outline: 2px dashed #2563eb;
-  outline-offset: 3px;
-}
-
-.selo-capa {
-  position: absolute;
-  left: 6px;
-  bottom: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #2563eb;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.dica-capa {
-  margin: 4px 0 8px;
-  font-size: 13px;
-  color: #6b7280;
 }

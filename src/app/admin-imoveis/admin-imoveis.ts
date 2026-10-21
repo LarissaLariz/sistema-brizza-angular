@@ -20,6 +20,8 @@ export class AdminImoveis {
   mensagemErro = '';
   mensagemSucesso = '';
 
+  salvando = false;
+
   indiceArrastado: number | null = null;
   indiceAlvo: number | null = null;
 
@@ -300,6 +302,13 @@ export class AdminImoveis {
       return;
     }
 
+    if (this.salvando) {
+      return;
+    }
+
+    this.salvando = true;
+    this.cdr.detectChanges();
+
     const imovelParaBanco = this.mapearImovelParaBanco(this.novoImovel);
 
     if (this.modoEdicao && this.imovelEditandoId !== null) {
@@ -317,6 +326,8 @@ export class AdminImoveis {
   }
 
   finalizarSalvamento(estavaEditando: boolean, resposta?: any) {
+    this.salvando = false;
+
     if (resposta && resposta.id) {
       const salvo = this.mapearImovelDoBanco(resposta);
 
@@ -347,6 +358,8 @@ export class AdminImoveis {
   }
 
   tratarErroSalvar(erro: any) {
+    this.salvando = false;
+
     console.error('Erro ao salvar imóvel:', erro);
     this.mensagemErro = 'Não foi possível salvar o imóvel. Verifique se o backend está rodando.';
     this.cdr.detectChanges();
