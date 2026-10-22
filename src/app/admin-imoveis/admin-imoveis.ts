@@ -21,6 +21,7 @@ export class AdminImoveis {
   mensagemSucesso = '';
 
   salvando = false;
+  carregandoImoveis = true;
 
   indiceArrastado: number | null = null;
   indiceAlvo: number | null = null;
@@ -59,16 +60,19 @@ export class AdminImoveis {
   ) {
     this.carregarImoveis();
   }
-
   carregarImoveis() {
+    this.carregandoImoveis = true;
+
     this.imoveisService.listarImoveis().subscribe({
       next: (imoveisDoBanco: any[]) => {
         this.imoveis = imoveisDoBanco.map((imovel: any) => this.mapearImovelDoBanco(imovel));
+        this.carregandoImoveis = false;
         this.cdr.detectChanges();
       },
       error: (erro) => {
         console.error('Erro ao carregar imóveis da API:', erro);
         this.mensagemErro = 'Não foi possível carregar os imóveis. Verifique se o backend está rodando.';
+        this.carregandoImoveis = false;
         this.cdr.detectChanges();
       },
     });
@@ -359,6 +363,7 @@ export class AdminImoveis {
 
   tratarErroSalvar(erro: any) {
     this.salvando = false;
+    
 
     console.error('Erro ao salvar imóvel:', erro);
     this.mensagemErro = 'Não foi possível salvar o imóvel. Verifique se o backend está rodando.';

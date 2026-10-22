@@ -193,7 +193,29 @@
   <section class="lista-card">
     <h2>Imóveis cadastrados</h2>
 
-    @if (imoveis.length === 0) {
+        @if (carregandoImoveis) {
+      <div class="carregando-lista">
+        <div class="carregando-topo">
+          <div class="spinner-grande"></div>
+          <div class="carregando-textos">
+            <strong>Carregando imóveis...</strong>
+            <span>Na primeira vez do dia pode levar um pouco mais.</span>
+          </div>
+        </div>
+
+        @for (item of [1, 2, 3]; track item) {
+          <div class="skeleton-card">
+            <div class="skeleton-foto"></div>
+
+            <div class="skeleton-textos">
+              <div class="skeleton-linha curta"></div>
+              <div class="skeleton-linha"></div>
+              <div class="skeleton-linha media"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (imoveis.length === 0) {
       <p>Nenhum imóvel cadastrado.</p>
     }
 
