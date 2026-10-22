@@ -238,10 +238,13 @@
 <div class="carrossel-container">
   <button class="seta esquerda" type="button" (click)="scrollEsquerda()">‹</button>
 
-  <div class="lista-hospedagens" #lista>
-    <div class="estado-lista" *ngIf="carregandoImoveis">
-      Carregando imóveis...
-    </div>
+      <ng-container *ngIf="carregandoImoveis">
+      <div class="skeleton-hospedagem" *ngFor="let n of [1, 2, 3, 4]" aria-label="Carregando imóveis">
+        <div class="skeleton-hospedagem-foto"></div>
+        <div class="skeleton-hospedagem-linha"></div>
+        <div class="skeleton-hospedagem-linha curta"></div>
+      </div>
+    </ng-container>
 
     <div class="estado-lista erro" *ngIf="!carregandoImoveis && erroCarregarImoveis">
       {{ erroCarregarImoveis }}
@@ -268,4 +271,3 @@
   </div>
 
   <button class="seta direita" type="button" (click)="scrollDireita()">›</button>
-</div>
