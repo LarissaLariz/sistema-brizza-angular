@@ -2,6 +2,7 @@ import { Component, ChangeDetectorRef, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Imoveis } from '../services/imoveis';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-imoveis',
@@ -53,13 +54,18 @@ export class AdminImoveis {
     comodidades: [] as string[],
   };
 
-  constructor(
+   constructor(
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
     private imoveisService: Imoveis,
+    private router: Router,
   ) {
     this.carregarImoveis();
   }
+    voltarParaPainel() {
+    this.router.navigate(['/admin']);
+  }
+  
   carregarImoveis() {
     this.carregandoImoveis = true;
 
