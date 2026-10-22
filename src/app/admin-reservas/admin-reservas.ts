@@ -55,6 +55,10 @@ export class AdminReservas implements OnInit {
   imoveisDisponiveis: ImovelOpcao[] = [];
 
   filtroStatus = 'todas';
+  termoBusca = '';
+
+  paginaAtual = 1;
+  readonly itensPorPagina = 4;
 
   bloqueioImovelId: number | string | null = null;
   bloqueioDataEntrada = '';
@@ -109,6 +113,7 @@ export class AdminReservas implements OnInit {
           return dataB - dataA;
         });
 
+        this.paginaAtual = 1;
         this.carregandoReservas = false;
         this.cdr.markForCheck();
       },
@@ -241,12 +246,80 @@ export class AdminReservas implements OnInit {
     });
   }
 
+  private normalizarTexto(texto?: string) {
+    return (texto || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
   get reservasFiltradas() {
-    if (this.filtroStatus === 'todas') {
-      return this.reservas;
+    const termo = this.normalizarTexto(this.termoBusca);
+
+    return this.reservas.filter((reserva) => {
+      const statusOk = this.filtroStatus === 'todas' || reserva.status === this.filtroStatus;
+      const imovelOk = !termo || this.normalizarTexto(reserva.titulo).includes(termo);
+
+      return statusOk && imovelOk;
+    });
+  }
+
+  get totalPaginas() {
+    return Math.max(1, Math.ceil(this.reservasFiltradas.length / this.itensPorPagina));
+  }
+
+  get reservasPaginadas() {
+    const inicio = (this.paginaAtual - 1) * this.itensPorPagina;
+
+    return this.reservasFiltradas.slice(inicio, inicio + this.itensPorPagina);
+  }
+
+  get paginas() {
+    return Array.from({ length: this.totalPaginas }, (_, indice) => indice + 1);
+  }
+
+  get textoIntervalo() {
+    const total = this.reservasFiltradas.length;
+
+    if (total === 0) {
+      return '';
     }
 
-    return this.reservas.filter((reserva) => reserva.status === this.filtroStatus);
+    const inicio = (this.paginaAtual - 1) * this.itensPorPagina + 1;
+    const fim = Math.min(this.paginaAtual * this.itensPorPagina, total);
+
+    return `Mostrando ${inicio}–${fim} de ${total} reserva(s)`;
+  }
+
+  mudarFiltroStatus(valor: string) {
+    this.filtroStatus = valor;
+    this.paginaAtual = 1;
+  }
+
+  mudarBusca(valor: string) {
+    this.termoBusca = valor;
+    this.paginaAtual = 1;
+  }
+
+  limparBusca() {
+    this.termoBusca = '';
+    this.paginaAtual = 1;
+  }
+
+  irParaPagina(pagina: number) {
+    if (pagina < 1 || pagina > this.totalPaginas) {
+      return;
+    }
+
+    this.paginaAtual = pagina;
+
+    setTimeout(() => {
+      document.getElementById('lista-reservas')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 0);
   }
 
   voltarParaPainel() {

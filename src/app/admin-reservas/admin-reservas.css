@@ -446,3 +446,148 @@ h1 {
     width: 100%;
   }
 }
+/* Corrige o botão "Bloquear período" saindo do cartão */
+.bloqueio-manual .bloqueio-form {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.bloqueio-manual .bloqueio-form .form-campo {
+  min-width: 0;
+}
+
+.bloqueio-manual .bloqueio-form input,
+.bloqueio-manual .bloqueio-form select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.bloqueio-manual .btn-bloquear {
+  grid-column: 1 / -1;
+  justify-self: end;
+}
+
+@media (max-width: 850px) {
+  .bloqueio-manual .bloqueio-form {
+    grid-template-columns: 1fr;
+  }
+
+  .bloqueio-manual .btn-bloquear {
+    justify-self: stretch;
+  }
+}
+
+/* Busca e filtros */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 18px;
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filtro-grupo label {
+  font-weight: 700;
+}
+
+.busca-imovel {
+  position: relative;
+  min-width: 280px;
+}
+
+.busca-imovel input {
+  width: 100%;
+  height: 40px;
+  padding: 0 36px 0 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.busca-imovel input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.busca-limpar {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Paginação */
+.paginacao-info {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 24px 0 8px;
+}
+
+.pagina-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.pagina-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.pagina-btn.ativa {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.pagina-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .busca-imovel {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .filtro-grupo {
+    width: 100%;
+  }
+}

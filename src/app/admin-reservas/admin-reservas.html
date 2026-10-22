@@ -137,14 +137,40 @@
   </section>
 
   <section class="filtros">
-    <label for="status">Filtrar por status:</label>
+    <div class="filtro-grupo">
+      <label for="busca-imovel">Buscar por imóvel:</label>
 
-    <select id="status" [(ngModel)]="filtroStatus">
-      <option value="todas">Todas</option>
-      <option value="pendente">Pendentes</option>
-      <option value="pago">Pagas</option>
-      <option value="cancelada">Canceladas</option>
-    </select>
+      <div class="busca-imovel">
+        <input
+          id="busca-imovel"
+          type="text"
+          placeholder="Digite o nome do imóvel"
+          [ngModel]="termoBusca"
+          (ngModelChange)="mudarBusca($event)"
+        />
+
+        <button
+          *ngIf="termoBusca"
+          type="button"
+          class="busca-limpar"
+          (click)="limparBusca()"
+          aria-label="Limpar busca"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+
+    <div class="filtro-grupo">
+      <label for="status">Filtrar por status:</label>
+
+      <select id="status" [ngModel]="filtroStatus" (ngModelChange)="mudarFiltroStatus($event)">
+        <option value="todas">Todas</option>
+        <option value="pendente">Pendentes</option>
+        <option value="pago">Pagas</option>
+        <option value="cancelada">Canceladas</option>
+      </select>
+    </div>
   </section>
 
   <section *ngIf="reservasFiltradas.length === 0" class="sem-reservas">
@@ -152,8 +178,10 @@
     <p>Ainda não existe nenhuma reserva com esse filtro.</p>
   </section>
 
-  <section class="lista-reservas" *ngIf="reservasFiltradas.length > 0">
-    <article class="reserva-card" *ngFor="let reserva of reservasFiltradas">
+  <p class="paginacao-info" *ngIf="reservasFiltradas.length > 0">{{ textoIntervalo }}</p>
+
+  <section class="lista-reservas" id="lista-reservas" *ngIf="reservasFiltradas.length > 0">
+    <article class="reserva-card" *ngFor="let reserva of reservasPaginadas">
       <div class="reserva-cabecalho">
         <div>
           <h2>{{ reserva.titulo || 'Imóvel não informado' }}</h2>
@@ -276,4 +304,34 @@
       </div>
     </article>
   </section>
+
+  <nav class="paginacao" *ngIf="totalPaginas > 1" aria-label="Paginação das reservas">
+    <button
+      type="button"
+      class="pagina-btn"
+      (click)="irParaPagina(paginaAtual - 1)"
+      [disabled]="paginaAtual === 1"
+    >
+      ‹ Anterior
+    </button>
+
+    <button
+      type="button"
+      class="pagina-btn numero"
+      *ngFor="let pagina of paginas"
+      [class.ativa]="pagina === paginaAtual"
+      (click)="irParaPagina(pagina)"
+    >
+      {{ pagina }}
+    </button>
+
+    <button
+      type="button"
+      class="pagina-btn"
+      (click)="irParaPagina(paginaAtual + 1)"
+      [disabled]="paginaAtual === totalPaginas"
+    >
+      Próxima ›
+    </button>
+  </nav>
 </div>
