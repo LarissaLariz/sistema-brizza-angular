@@ -7,6 +7,7 @@ const authCliente = require('../middleware/auth-cliente');
 const {
   listarReservas,
   listarMinhasReservas,
+  listarIndisponibilidades,
   listarReservasPorImovel,
   criarReserva,
   atualizarStatusReserva,
@@ -20,6 +21,7 @@ const {
 
 router.get('/', authAdmin, listarReservas);
 router.get('/minhas', authCliente, listarMinhasReservas);
+router.get('/indisponibilidades', listarIndisponibilidades);
 router.get('/imovel/:id', listarReservasPorImovel);
 router.post('/', criarReserva);
 router.patch('/:id/status', authAdmin, atualizarStatusReserva);

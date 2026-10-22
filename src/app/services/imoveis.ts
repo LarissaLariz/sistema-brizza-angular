@@ -58,6 +58,10 @@ export class Imoveis {
     );
   }
 
+    listarIndisponibilidades(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.reservasUrl}/indisponibilidades`);
+  }
+
   criarReserva(reserva: any): Observable<any> {
     return this.http.post<any>(this.reservasUrl, reserva);
   }

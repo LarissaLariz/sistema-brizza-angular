@@ -250,11 +250,16 @@
       {{ erroCarregarImoveis }}
     </div>
 
-    <div
-      class="estado-lista"
+        <div
+      class="sem-resultados"
       *ngIf="!carregandoImoveis && !erroCarregarImoveis && hospedagensFiltradas.length === 0"
     >
-      Nenhum imóvel encontrado.
+      <strong>Nenhum imóvel disponível</strong>
+      <p>Não encontramos imóveis para essa busca. Tente outras datas, outro local ou menos hóspedes.</p>
+
+      <button type="button" class="sem-resultados-btn" (click)="limparBusca(); $event.stopPropagation()">
+        Limpar filtros
+      </button>
     </div>
 
     <app-hospedagem-card

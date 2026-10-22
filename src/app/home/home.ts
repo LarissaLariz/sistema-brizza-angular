@@ -49,6 +49,8 @@ export class Home implements AfterViewInit {
   hospedagens: any[] = [];
   hospedagensFiltradas: any[] = [];
 
+  indisponibilidades: any[] = [];
+
   carregandoImoveis = false;
   erroCarregarImoveis = '';
 
@@ -240,6 +242,7 @@ export class Home implements AfterViewInit {
     this.dataSaida = null;
     this.adultos = 0;
     this.criancas = 0;
+    this.erroCarregarImoveis = '';
 
     this.hospedagensFiltradas = [...this.hospedagens];
 
@@ -306,22 +309,69 @@ export class Home implements AfterViewInit {
   }
 
   buscar() {
-    const localBusca = this.localSelecionado.trim().toLowerCase();
-
-    if (!localBusca) {
-      this.hospedagensFiltradas = [...this.hospedagens];
-    } else {
-      this.hospedagensFiltradas = this.hospedagens.filter((item) =>
-        (item.local ?? '').toLowerCase().includes(localBusca),
-      );
-    }
-
     this.mostrarSugestoesLocal = false;
     this.mostrarCalendario = false;
     this.mostrarHospedes = false;
+    this.erroCarregarImoveis = '';
+
+    if (this.dataEntrada && this.dataSaida) {
+      this.carregandoImoveis = true;
+      this.cdr.detectChanges();
+
+      this.imoveisService.listarIndisponibilidades().subscribe({
+        next: (periodos: any[]) => {
+          this.indisponibilidades = periodos;
+          this.carregandoImoveis = false;
+          this.aplicarFiltros();
+        },
+        error: (erro) => {
+          console.error('Erro ao verificar disponibilidade:', erro);
+
+          this.indisponibilidades = [];
+          this.hospedagensFiltradas = [];
+          this.carregandoImoveis = false;
+          this.erroCarregarImoveis =
+            'Não foi possível verificar a disponibilidade. Tente novamente.';
+
+          this.cdr.detectChanges();
+        },
+      });
+
+      return;
+    }
+
+    this.aplicarFiltros();
+  }
+
+  private aplicarFiltros() {
+    const localBusca = this.localSelecionado.trim().toLowerCase();
+    const totalHospedes = this.adultos + this.criancas;
+    const entrada = this.dataEntrada;
+    const saida = this.dataSaida;
+
+    this.hospedagensFiltradas = this.hospedagens.filter((item) => {
+      const localOk = !localBusca || (item.local ?? '').toLowerCase().includes(localBusca);
+      const hospedesOk = totalHospedes === 0 || Number(item.hospedes) >= totalHospedes;
+      const dataOk = !entrada || !saida || !this.estaIndisponivel(item.id, entrada, saida);
+
+      return localOk && hospedesOk && dataOk;
+    });
 
     this.cdr.detectChanges();
     this.resetarScrollLista();
+  }
+
+  private estaIndisponivel(imovelId: number, entrada: string, saida: string) {
+    return this.indisponibilidades.some((periodo) => {
+      if (Number(periodo.imovel_id) !== Number(imovelId)) {
+        return false;
+      }
+
+      const entradaOcupada = String(periodo.data_entrada).substring(0, 10);
+      const saidaOcupada = String(periodo.data_saida).substring(0, 10);
+
+      return entrada < saidaOcupada && saida > entradaOcupada;
+    });
   }
 
   scrollDireita() {
@@ -398,7 +448,8 @@ export class Home implements AfterViewInit {
 
     return data > this.dataEntrada && data < this.dataSaida;
   }
+
   irParaDetalhes(id: number) {
-  this.router.navigate(['/detalhes', id]); 
-}
+    this.router.navigate(['/detalhes', id]);
+  }
 }

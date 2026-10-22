@@ -1,4 +1,3 @@
-
 const pool = require('../database/connection');
 
 async function listarReservas(req, res) {
@@ -13,6 +12,53 @@ async function listarReservas(req, res) {
   } catch (erro) {
     console.error(erro);
     res.status(500).json({ erro: 'Erro ao buscar reservas' });
+  }
+}
+
+async function listarMinhasReservas(req, res) {
+  try {
+    const resultado = await pool.query(
+      `
+      SELECT *
+      FROM reservas
+      WHERE LOWER(usuario_email) = LOWER($1)
+      ORDER BY criado_em DESC
+      `,
+      [req.cliente.email],
+    );
+
+    res.json(resultado.rows);
+  } catch (erro) {
+    console.error(erro);
+    res.status(500).json({ erro: 'Erro ao buscar suas reservas' });
+  }
+}
+
+async function listarIndisponibilidades(req, res) {
+  try {
+    const resultado = await pool.query(`
+      SELECT
+        imovel_id,
+        to_char(data_entrada, 'YYYY-MM-DD') AS data_entrada,
+        to_char(data_saida, 'YYYY-MM-DD') AS data_saida
+      FROM reservas
+      WHERE status IN ('pendente', 'pago')
+        AND data_saida >= CURRENT_DATE
+
+      UNION ALL
+
+      SELECT
+        imovel_id,
+        to_char(data_entrada, 'YYYY-MM-DD') AS data_entrada,
+        to_char(data_saida, 'YYYY-MM-DD') AS data_saida
+      FROM bloqueios_datas
+      WHERE data_saida >= CURRENT_DATE
+    `);
+
+    res.json(resultado.rows);
+  } catch (erro) {
+    console.error(erro);
+    res.status(500).json({ erro: 'Erro ao buscar disponibilidade' });
   }
 }
 
@@ -195,28 +241,10 @@ async function atualizarStatusReserva(req, res) {
   }
 }
 
-async function listarMinhasReservas(req, res) {
-  try {
-    const resultado = await pool.query(
-      `
-      SELECT *
-      FROM reservas
-      WHERE LOWER(usuario_email) = LOWER($1)
-      ORDER BY criado_em DESC
-      `,
-      [req.cliente.email],
-    );
-
-    res.json(resultado.rows);
-  } catch (erro) {
-    console.error(erro);
-    res.status(500).json({ erro: 'Erro ao buscar suas reservas' });
-  }
-}
-
 module.exports = {
   listarReservas,
   listarMinhasReservas,
+  listarIndisponibilidades,
   listarReservasPorImovel,
   criarReserva,
   atualizarStatusReserva,
