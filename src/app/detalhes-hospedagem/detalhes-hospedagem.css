@@ -1018,3 +1018,32 @@
   margin-bottom: 14px;
 }
 }
+.carregando-detalhes {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.carregando-detalhes strong {
+  font-size: 18px;
+  color: #111827;
+}
+
+.spinner-detalhes {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #dbeafe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: girar-detalhes 0.8s linear infinite;
+}
+
+@keyframes girar-detalhes {
+  to {
+    transform: rotate(360deg);
+  }
+}
