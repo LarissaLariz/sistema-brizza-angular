@@ -72,8 +72,14 @@
 }
 
 .acoes button:first-child {
-  background-color: #88c8d2;
+  background-color: #0f766e;
   color: white;
+  font-weight: 700;
+  transition: background-color 0.2s ease;
+}
+
+.acoes button:first-child:hover {
+  background-color: #115e59;
 }
 
 .acoes button:last-child {
