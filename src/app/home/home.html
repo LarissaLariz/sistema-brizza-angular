@@ -275,8 +275,8 @@
   <span>Falar com o proprietário</span>
 </a>
 
-      <div class="carrossel-itens">
-  <ng-container *ngIf="!carregandoImoveis">
+<div class="carrossel-itens" #lista>
+    <ng-container *ngIf="!carregandoImoveis">
     <app-hospedagem-card
       *ngFor="let item of hospedagensFiltradas"
       [titulo]="item.titulo"
