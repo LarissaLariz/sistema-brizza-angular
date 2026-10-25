@@ -625,3 +625,14 @@
     display: none;
   }
 }
+.carrossel-itens {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+.carrossel-itens::-webkit-scrollbar {
+  display: none;
+}

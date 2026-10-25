@@ -275,18 +275,20 @@
   <span>Falar com o proprietário</span>
 </a>
 
-        <ng-container *ngIf="!carregandoImoveis">
-      <app-hospedagem-card
-        *ngFor="let item of hospedagensFiltradas"
-        [titulo]="item.titulo"
-        [descricao]="item.descricao"
-        [imagem]="item.imagem"
-        [hospedagem]="item"
-        [dataEntrada]="dataEntrada"
-        [dataSaida]="dataSaida"
-        [adultos]="adultos"
-        [criancas]="criancas"
-      ></app-hospedagem-card>
-    </ng-container>
+      <div class="carrossel-itens">
+  <ng-container *ngIf="!carregandoImoveis">
+    <app-hospedagem-card
+      *ngFor="let item of hospedagensFiltradas"
+      [titulo]="item.titulo"
+      [descricao]="item.descricao"
+      [imagem]="item.imagem"
+      [hospedagem]="item"
+      [dataEntrada]="dataEntrada"
+      [dataSaida]="dataSaida"
+      [adultos]="adultos"
+      [criancas]="criancas"
+    ></app-hospedagem-card>
+  </ng-container>
+</div>
 
   <button class="seta direita" type="button" (click)="scrollDireita()">›</button>
